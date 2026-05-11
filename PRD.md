@@ -281,7 +281,7 @@
 |------|------|------|
 | 框架 | **React Native** | 跨平台，生态成熟，支持原生能力扩展 |
 | 语言 | TypeScript | 类型安全，便于多人协作 |
-| 状态管理 | Redux Toolkit（MVP默认） / Zustand（可选） | 轻量级，适合MVP |
+| 状态管理 | Redux Toolkit（MVP默认） / Zustand（轻量备选） | 默认方案功能完整，备选方案更轻量 |
 | 网络请求 | Axios | 常用HTTP客户端 |
 | 本地存储 | AsyncStorage | 轻量级键值存储（Token、用户偏好） |
 | 语音输入 | react-native-voice | 语音转文字能力 |

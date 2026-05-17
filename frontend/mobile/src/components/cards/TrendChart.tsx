@@ -16,21 +16,22 @@ export function TrendChart({ data }: Props) {
         <AreaChart data={localized} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="masteryGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="oklch(0.55 0.18 252)" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="oklch(0.55 0.18 252)" stopOpacity={0} />
+              <stop offset="0%" stopColor="oklch(0.42 0.14 270)" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="oklch(0.42 0.14 270)" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="day" tick={{ fontSize: 11, fill: "oklch(0.5 0.03 255)" }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 11, fill: "oklch(0.5 0.03 255)" }} axisLine={false} tickLine={false} width={28} />
+          <XAxis dataKey="day" tick={{ fontSize: 11, fill: "oklch(0.52 0.025 70)" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 11, fill: "oklch(0.52 0.025 70)" }} axisLine={false} tickLine={false} width={28} />
           <Tooltip
             contentStyle={{
-              borderRadius: 12,
-              border: "1px solid oklch(0.92 0.01 252)",
+              borderRadius: 16,
+              border: "1px solid oklch(0.91 0.008 80)",
               fontSize: 12,
+              boxShadow: "0 8px 24px -8px oklch(0.2 0.02 65 / 0.12)",
             }}
             formatter={((v: unknown) => [`${v}%`, t("po.mastery")]) as never}
           />
-          <Area type="monotone" dataKey="mastery" stroke="oklch(0.55 0.18 252)" strokeWidth={2} fill="url(#masteryGrad)" />
+          <Area type="monotone" dataKey="mastery" stroke="oklch(0.42 0.14 270)" strokeWidth={2.5} fill="url(#masteryGrad)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

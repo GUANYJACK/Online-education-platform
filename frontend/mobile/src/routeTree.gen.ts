@@ -23,6 +23,7 @@ import { Route as StudentSettingsRouteImport } from './routes/student.settings'
 import { Route as StudentProgressRouteImport } from './routes/student.progress'
 import { Route as StudentMeRouteImport } from './routes/student.me'
 import { Route as StudentLearnRouteImport } from './routes/student.learn'
+import { Route as StudentKnowledgePointRouteImport } from './routes/student.knowledge-point'
 import { Route as StudentAiRouteImport } from './routes/student.ai'
 import { Route as ParentWellbeingRouteImport } from './routes/parent.wellbeing'
 import { Route as ParentSubjectsRouteImport } from './routes/parent.subjects'
@@ -30,10 +31,14 @@ import { Route as ParentSettingsRouteImport } from './routes/parent.settings'
 import { Route as ParentOverviewRouteImport } from './routes/parent.overview'
 import { Route as ParentMeRouteImport } from './routes/parent.me'
 import { Route as ParentChildrenRouteImport } from './routes/parent.children'
+import { Route as StudentTestIndexRouteImport } from './routes/student.test.index'
+import { Route as StudentProgressIndexRouteImport } from './routes/student.progress.index'
+import { Route as StudentLearnIndexRouteImport } from './routes/student.learn.index'
 import { Route as StudentTestWrongRouteImport } from './routes/student.test.wrong'
 import { Route as StudentTestScoreRouteImport } from './routes/student.test.score'
 import { Route as StudentTestResultRouteImport } from './routes/student.test.result'
 import { Route as StudentTestQuizRouteImport } from './routes/student.test.quiz'
+import { Route as StudentProgressSubjectRouteImport } from './routes/student.progress.$subject'
 import { Route as StudentLearnSubjectRouteImport } from './routes/student.learn.$subject'
 import { Route as StudentLearnSubjectChapterRouteImport } from './routes/student.learn.$subject.$chapter'
 
@@ -107,6 +112,11 @@ const StudentLearnRoute = StudentLearnRouteImport.update({
   path: '/learn',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentKnowledgePointRoute = StudentKnowledgePointRouteImport.update({
+  id: '/knowledge-point',
+  path: '/knowledge-point',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentAiRoute = StudentAiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -142,6 +152,21 @@ const ParentChildrenRoute = ParentChildrenRouteImport.update({
   path: '/children',
   getParentRoute: () => ParentRoute,
 } as any)
+const StudentTestIndexRoute = StudentTestIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentTestRoute,
+} as any)
+const StudentProgressIndexRoute = StudentProgressIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentProgressRoute,
+} as any)
+const StudentLearnIndexRoute = StudentLearnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentLearnRoute,
+} as any)
 const StudentTestWrongRoute = StudentTestWrongRouteImport.update({
   id: '/wrong',
   path: '/wrong',
@@ -161,6 +186,11 @@ const StudentTestQuizRoute = StudentTestQuizRouteImport.update({
   id: '/quiz',
   path: '/quiz',
   getParentRoute: () => StudentTestRoute,
+} as any)
+const StudentProgressSubjectRoute = StudentProgressSubjectRouteImport.update({
+  id: '/$subject',
+  path: '/$subject',
+  getParentRoute: () => StudentProgressRoute,
 } as any)
 const StudentLearnSubjectRoute = StudentLearnSubjectRouteImport.update({
   id: '/$subject',
@@ -189,18 +219,23 @@ export interface FileRoutesByFullPath {
   '/parent/subjects': typeof ParentSubjectsRoute
   '/parent/wellbeing': typeof ParentWellbeingRoute
   '/student/ai': typeof StudentAiRoute
+  '/student/knowledge-point': typeof StudentKnowledgePointRoute
   '/student/learn': typeof StudentLearnRouteWithChildren
   '/student/me': typeof StudentMeRoute
-  '/student/progress': typeof StudentProgressRoute
+  '/student/progress': typeof StudentProgressRouteWithChildren
   '/student/settings': typeof StudentSettingsRoute
   '/student/test': typeof StudentTestRouteWithChildren
   '/student/textbook': typeof StudentTextbookRoute
   '/student/treehole': typeof StudentTreeholeRoute
   '/student/learn/$subject': typeof StudentLearnSubjectRouteWithChildren
+  '/student/progress/$subject': typeof StudentProgressSubjectRoute
   '/student/test/quiz': typeof StudentTestQuizRoute
   '/student/test/result': typeof StudentTestResultRoute
   '/student/test/score': typeof StudentTestScoreRoute
   '/student/test/wrong': typeof StudentTestWrongRoute
+  '/student/learn/': typeof StudentLearnIndexRoute
+  '/student/progress/': typeof StudentProgressIndexRoute
+  '/student/test/': typeof StudentTestIndexRoute
   '/student/learn/$subject/$chapter': typeof StudentLearnSubjectChapterRoute
 }
 export interface FileRoutesByTo {
@@ -218,18 +253,20 @@ export interface FileRoutesByTo {
   '/parent/subjects': typeof ParentSubjectsRoute
   '/parent/wellbeing': typeof ParentWellbeingRoute
   '/student/ai': typeof StudentAiRoute
-  '/student/learn': typeof StudentLearnRouteWithChildren
+  '/student/knowledge-point': typeof StudentKnowledgePointRoute
   '/student/me': typeof StudentMeRoute
-  '/student/progress': typeof StudentProgressRoute
   '/student/settings': typeof StudentSettingsRoute
-  '/student/test': typeof StudentTestRouteWithChildren
   '/student/textbook': typeof StudentTextbookRoute
   '/student/treehole': typeof StudentTreeholeRoute
   '/student/learn/$subject': typeof StudentLearnSubjectRouteWithChildren
+  '/student/progress/$subject': typeof StudentProgressSubjectRoute
   '/student/test/quiz': typeof StudentTestQuizRoute
   '/student/test/result': typeof StudentTestResultRoute
   '/student/test/score': typeof StudentTestScoreRoute
   '/student/test/wrong': typeof StudentTestWrongRoute
+  '/student/learn': typeof StudentLearnIndexRoute
+  '/student/progress': typeof StudentProgressIndexRoute
+  '/student/test': typeof StudentTestIndexRoute
   '/student/learn/$subject/$chapter': typeof StudentLearnSubjectChapterRoute
 }
 export interface FileRoutesById {
@@ -248,18 +285,23 @@ export interface FileRoutesById {
   '/parent/subjects': typeof ParentSubjectsRoute
   '/parent/wellbeing': typeof ParentWellbeingRoute
   '/student/ai': typeof StudentAiRoute
+  '/student/knowledge-point': typeof StudentKnowledgePointRoute
   '/student/learn': typeof StudentLearnRouteWithChildren
   '/student/me': typeof StudentMeRoute
-  '/student/progress': typeof StudentProgressRoute
+  '/student/progress': typeof StudentProgressRouteWithChildren
   '/student/settings': typeof StudentSettingsRoute
   '/student/test': typeof StudentTestRouteWithChildren
   '/student/textbook': typeof StudentTextbookRoute
   '/student/treehole': typeof StudentTreeholeRoute
   '/student/learn/$subject': typeof StudentLearnSubjectRouteWithChildren
+  '/student/progress/$subject': typeof StudentProgressSubjectRoute
   '/student/test/quiz': typeof StudentTestQuizRoute
   '/student/test/result': typeof StudentTestResultRoute
   '/student/test/score': typeof StudentTestScoreRoute
   '/student/test/wrong': typeof StudentTestWrongRoute
+  '/student/learn/': typeof StudentLearnIndexRoute
+  '/student/progress/': typeof StudentProgressIndexRoute
+  '/student/test/': typeof StudentTestIndexRoute
   '/student/learn/$subject/$chapter': typeof StudentLearnSubjectChapterRoute
 }
 export interface FileRouteTypes {
@@ -279,6 +321,7 @@ export interface FileRouteTypes {
     | '/parent/subjects'
     | '/parent/wellbeing'
     | '/student/ai'
+    | '/student/knowledge-point'
     | '/student/learn'
     | '/student/me'
     | '/student/progress'
@@ -287,10 +330,14 @@ export interface FileRouteTypes {
     | '/student/textbook'
     | '/student/treehole'
     | '/student/learn/$subject'
+    | '/student/progress/$subject'
     | '/student/test/quiz'
     | '/student/test/result'
     | '/student/test/score'
     | '/student/test/wrong'
+    | '/student/learn/'
+    | '/student/progress/'
+    | '/student/test/'
     | '/student/learn/$subject/$chapter'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -308,18 +355,20 @@ export interface FileRouteTypes {
     | '/parent/subjects'
     | '/parent/wellbeing'
     | '/student/ai'
-    | '/student/learn'
+    | '/student/knowledge-point'
     | '/student/me'
-    | '/student/progress'
     | '/student/settings'
-    | '/student/test'
     | '/student/textbook'
     | '/student/treehole'
     | '/student/learn/$subject'
+    | '/student/progress/$subject'
     | '/student/test/quiz'
     | '/student/test/result'
     | '/student/test/score'
     | '/student/test/wrong'
+    | '/student/learn'
+    | '/student/progress'
+    | '/student/test'
     | '/student/learn/$subject/$chapter'
   id:
     | '__root__'
@@ -337,6 +386,7 @@ export interface FileRouteTypes {
     | '/parent/subjects'
     | '/parent/wellbeing'
     | '/student/ai'
+    | '/student/knowledge-point'
     | '/student/learn'
     | '/student/me'
     | '/student/progress'
@@ -345,10 +395,14 @@ export interface FileRouteTypes {
     | '/student/textbook'
     | '/student/treehole'
     | '/student/learn/$subject'
+    | '/student/progress/$subject'
     | '/student/test/quiz'
     | '/student/test/result'
     | '/student/test/score'
     | '/student/test/wrong'
+    | '/student/learn/'
+    | '/student/progress/'
+    | '/student/test/'
     | '/student/learn/$subject/$chapter'
   fileRoutesById: FileRoutesById
 }
@@ -462,6 +516,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentLearnRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/knowledge-point': {
+      id: '/student/knowledge-point'
+      path: '/knowledge-point'
+      fullPath: '/student/knowledge-point'
+      preLoaderRoute: typeof StudentKnowledgePointRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/student/ai': {
       id: '/student/ai'
       path: '/ai'
@@ -511,6 +572,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentChildrenRouteImport
       parentRoute: typeof ParentRoute
     }
+    '/student/test/': {
+      id: '/student/test/'
+      path: '/'
+      fullPath: '/student/test/'
+      preLoaderRoute: typeof StudentTestIndexRouteImport
+      parentRoute: typeof StudentTestRoute
+    }
+    '/student/progress/': {
+      id: '/student/progress/'
+      path: '/'
+      fullPath: '/student/progress/'
+      preLoaderRoute: typeof StudentProgressIndexRouteImport
+      parentRoute: typeof StudentProgressRoute
+    }
+    '/student/learn/': {
+      id: '/student/learn/'
+      path: '/'
+      fullPath: '/student/learn/'
+      preLoaderRoute: typeof StudentLearnIndexRouteImport
+      parentRoute: typeof StudentLearnRoute
+    }
     '/student/test/wrong': {
       id: '/student/test/wrong'
       path: '/wrong'
@@ -538,6 +620,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/student/test/quiz'
       preLoaderRoute: typeof StudentTestQuizRouteImport
       parentRoute: typeof StudentTestRoute
+    }
+    '/student/progress/$subject': {
+      id: '/student/progress/$subject'
+      path: '/$subject'
+      fullPath: '/student/progress/$subject'
+      preLoaderRoute: typeof StudentProgressSubjectRouteImport
+      parentRoute: typeof StudentProgressRoute
     }
     '/student/learn/$subject': {
       id: '/student/learn/$subject'
@@ -590,14 +679,30 @@ const StudentLearnSubjectRouteWithChildren =
 
 interface StudentLearnRouteChildren {
   StudentLearnSubjectRoute: typeof StudentLearnSubjectRouteWithChildren
+  StudentLearnIndexRoute: typeof StudentLearnIndexRoute
 }
 
 const StudentLearnRouteChildren: StudentLearnRouteChildren = {
   StudentLearnSubjectRoute: StudentLearnSubjectRouteWithChildren,
+  StudentLearnIndexRoute: StudentLearnIndexRoute,
 }
 
 const StudentLearnRouteWithChildren = StudentLearnRoute._addFileChildren(
   StudentLearnRouteChildren,
+)
+
+interface StudentProgressRouteChildren {
+  StudentProgressSubjectRoute: typeof StudentProgressSubjectRoute
+  StudentProgressIndexRoute: typeof StudentProgressIndexRoute
+}
+
+const StudentProgressRouteChildren: StudentProgressRouteChildren = {
+  StudentProgressSubjectRoute: StudentProgressSubjectRoute,
+  StudentProgressIndexRoute: StudentProgressIndexRoute,
+}
+
+const StudentProgressRouteWithChildren = StudentProgressRoute._addFileChildren(
+  StudentProgressRouteChildren,
 )
 
 interface StudentTestRouteChildren {
@@ -605,6 +710,7 @@ interface StudentTestRouteChildren {
   StudentTestResultRoute: typeof StudentTestResultRoute
   StudentTestScoreRoute: typeof StudentTestScoreRoute
   StudentTestWrongRoute: typeof StudentTestWrongRoute
+  StudentTestIndexRoute: typeof StudentTestIndexRoute
 }
 
 const StudentTestRouteChildren: StudentTestRouteChildren = {
@@ -612,6 +718,7 @@ const StudentTestRouteChildren: StudentTestRouteChildren = {
   StudentTestResultRoute: StudentTestResultRoute,
   StudentTestScoreRoute: StudentTestScoreRoute,
   StudentTestWrongRoute: StudentTestWrongRoute,
+  StudentTestIndexRoute: StudentTestIndexRoute,
 }
 
 const StudentTestRouteWithChildren = StudentTestRoute._addFileChildren(
@@ -620,9 +727,10 @@ const StudentTestRouteWithChildren = StudentTestRoute._addFileChildren(
 
 interface StudentRouteChildren {
   StudentAiRoute: typeof StudentAiRoute
+  StudentKnowledgePointRoute: typeof StudentKnowledgePointRoute
   StudentLearnRoute: typeof StudentLearnRouteWithChildren
   StudentMeRoute: typeof StudentMeRoute
-  StudentProgressRoute: typeof StudentProgressRoute
+  StudentProgressRoute: typeof StudentProgressRouteWithChildren
   StudentSettingsRoute: typeof StudentSettingsRoute
   StudentTestRoute: typeof StudentTestRouteWithChildren
   StudentTextbookRoute: typeof StudentTextbookRoute
@@ -631,9 +739,10 @@ interface StudentRouteChildren {
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentAiRoute: StudentAiRoute,
+  StudentKnowledgePointRoute: StudentKnowledgePointRoute,
   StudentLearnRoute: StudentLearnRouteWithChildren,
   StudentMeRoute: StudentMeRoute,
-  StudentProgressRoute: StudentProgressRoute,
+  StudentProgressRoute: StudentProgressRouteWithChildren,
   StudentSettingsRoute: StudentSettingsRoute,
   StudentTestRoute: StudentTestRouteWithChildren,
   StudentTextbookRoute: StudentTextbookRoute,

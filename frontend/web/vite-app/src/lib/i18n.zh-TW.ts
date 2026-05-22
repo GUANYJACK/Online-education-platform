@@ -14,6 +14,14 @@ export const ZH_TW: Record<string, string> = {
   'School Overview': '全校總覽',
   'Subscription': '訂閱方案',
   'Settings': '設定',
+  'Collapse': '收合側欄',
+  'Expand': '展開側欄',
+  'Profile': '個人資料',
+  'Sign out': '登出',
+  'Mark all read': '全部標為已讀',
+  'Activity alerts': '動態提醒',
+  'Weekly digest': '每週摘要',
+  'At-risk student alerts': '高風險學生提醒',
 
   // ── Top bar ───────────────────────────────────────────────────────────
   'Teacher': '教師',

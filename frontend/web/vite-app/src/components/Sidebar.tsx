@@ -1,4 +1,3 @@
-// Left navigation rail. Switches items based on active role.
 import type { Role } from '../types';
 import { classNames } from '../lib/format';
 import { t } from '../lib/i18n';
@@ -11,9 +10,12 @@ interface SidebarProps {
   onNavigate: (next: { view: string }) => void;
   role: Role;
   collapsed: boolean;
+  onCollapsedToggle: () => void;
+  onSubscriptionClick: () => void;
+  onSettingsClick: () => void;
 }
 
-export function Sidebar({ view, onNavigate, role, collapsed }: SidebarProps) {
+export function Sidebar({ view, onNavigate, role, collapsed, onCollapsedToggle, onSubscriptionClick, onSettingsClick }: SidebarProps) {
   const items: NavItem[] = [
     { id: 'dashboard',     label: t('Dashboard'),     icon: 'home' },
     { id: 'classes',       label: t('Classes'),       icon: 'grid' },
@@ -21,7 +23,7 @@ export function Sidebar({ view, onNavigate, role, collapsed }: SidebarProps) {
     { id: 'mental-health', label: t('Mental Health'), icon: 'heart' },
   ];
   const adminItems: NavItem[] = [
-    { id: 'admin-school',  label: t('School Overview'), icon: 'school' },
+    { id: 'admin-school', label: t('School Overview'), icon: 'school' },
   ];
 
   const goTo = (id: string) => onNavigate({ view: id });
@@ -73,8 +75,33 @@ export function Sidebar({ view, onNavigate, role, collapsed }: SidebarProps) {
       </nav>
 
       <div className="sidebar__foot">
-        <button className="navitem"><Icon name="card" /> {!collapsed && <span>{t('Subscription')}</span>}</button>
-        <button className="navitem"><Icon name="settings" /> {!collapsed && <span>{t('Settings')}</span>}</button>
+        <button
+          className="navitem"
+          onClick={onSubscriptionClick}
+          title={t('Subscription')}
+        >
+          <Icon name="card" />
+          {!collapsed && <span>{t('Subscription')}</span>}
+        </button>
+        <button
+          className="navitem"
+          onClick={onSettingsClick}
+          title={t('Settings')}
+        >
+          <Icon name="settings" />
+          {!collapsed && <span>{t('Settings')}</span>}
+        </button>
+        <button
+          className="navitem sidebar__collapse-btn"
+          onClick={onCollapsedToggle}
+          title={collapsed ? t('Expand') : t('Collapse')}
+        >
+          <Icon
+            name="chevron"
+            style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}
+          />
+          {!collapsed && <span>{t('Collapse')}</span>}
+        </button>
       </div>
     </aside>
   );

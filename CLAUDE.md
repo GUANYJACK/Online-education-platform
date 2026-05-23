@@ -78,32 +78,35 @@ This repository is for an AI-agent driven online education platform MVP used for
 - `Jobs Duty Assignment.md` for team responsibilities and delivery timing
 
 The current working model is four parallel workstreams:
-- course content and presentation materials
-- mobile app for student/parent experiences
-- web app for teacher/school experiences
-- backend services and APIs
+- course content and presentation materials (成员 1)
+- mobile app for student/parent experiences — **Flutter** (成员 2)
+- web app for teacher/school experiences — **React** (成员 3)
+- backend services and APIs — **Node.js + Express + MySQL** (成员 4)
 
 ## Current repository state
 
-The repository is still in an early initialization stage. There is not yet a full runnable application scaffold or package manifest in place, so there are no confirmed build/test commands to document yet.
+The repository is in active development toward the 5/20 MVP launch. Directory scaffolding is in place. Design documents exist for both mobile and web frontends. The next step is to populate each directory with actual application code.
 
-When the app scaffold is introduced, add the actual commands here for:
-- backend start/dev/test commands
-- mobile app run commands
-- web app run commands
-- any one-off data or content generation commands
+Current top-level structure:
+- `backend/` — server, database, auth, AI integration, APIs (成员 4)
+- `frontend/mobile/` — Flutter student/parent app (成员 2)
+- `frontend/web/` — React teacher/school app (成员 3)
+- `content/` — curriculum data, examples, presentation content (成员 1)
+- `docs/` — supporting project documents
 
-## High-level structure
+## Design documents
 
-Planned top-level structure:
-- `backend/` for server, database, auth, AI integration, and APIs
-- `frontend/mobile/` for the React Native student/parent app
-- `frontend/web/` for the React teacher/school app
-- `content/` for curriculum data, examples, and presentation content
-- `docs/` for supporting project documents
+| Document | Path | Audience |
+|---|---|---|
+| PRD | `PRD.md` | All |
+| Mobile UI/UX Spec | `frontend/mobile/移动端界面设计与功能需求.md` | 成员 2 |
+| Web UI/UX Spec | `frontend/web/网页端界面设计与功能需求.md` | 成员 3 |
+| Task Tracker | `todo.md` | All |
 
 ## Working notes
 
 - Keep implementation aligned with the MVP milestones and avoid expanding beyond the presentation scope unless the PRD is updated.
 - Prefer simple, demo-friendly implementations over production-complete complexity during this phase.
 - Use the PRD and duty assignment document as the main reference for scope decisions.
+- Mobile app uses **React** — no specific framework locked in yet.
+- MVP does NOT include: push notifications, third-party login (WeChat/QQ), voice output, offline support, real mental health analysis.

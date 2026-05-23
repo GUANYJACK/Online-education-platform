@@ -118,30 +118,6 @@ export const subjects: Subject[] = [
       },
     ],
   },
-  {
-    id: "ls",
-    name: "公民與社會發展科",
-    emoji: "🏛️",
-    color: "mastered",
-    chapters: [
-      {
-        id: "hk",
-        name: "香港",
-        points: [
-          { id: "basiclaw", name: "《基本法》與香港", desc: "一國兩制、高度自治", mastery: "mastered" },
-          { id: "society", name: "香港社會與文化", desc: "多元社會、公民權利與義務", mastery: "partial" },
-        ],
-      },
-      {
-        id: "china",
-        name: "國家",
-        points: [
-          { id: "development", name: "國家改革開放", desc: "經濟發展、現代化進程", mastery: "partial" },
-          { id: "connection", name: "香港與國家的關係", desc: "融合發展、大灣區", mastery: "weak" },
-        ],
-      },
-    ],
-  },
 ];
 
 export const trendData = [

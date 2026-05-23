@@ -183,7 +183,7 @@ function LoginPage() {
             disabled={!isFormValid}
             className={`mt-2 w-full rounded-2xl py-3.5 text-sm font-bold transition-all active:scale-[0.97] ${
               isFormValid
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                ? "bg-primary/80 text-primary-foreground shadow-lg shadow-primary/15 hover:bg-primary hover:shadow-xl hover:shadow-primary/20"
                 : "bg-muted text-muted-foreground/50 cursor-not-allowed"
             }`}
           >
@@ -203,7 +203,7 @@ function LoginPage() {
           {/* WeChat */}
           <button
             onClick={() => alert(t("login.toast.thirdParty", { p: "微信" }))}
-            className="flex items-center justify-center rounded-full bg-[#07C160] shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+            className="flex items-center justify-center rounded-full bg-[#e8f5ee] border border-[#07C160]/15 shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95"
             style={{ width: 48, height: 48 }}
           >
             <img src={WeChatIcon} alt="微信" width="24" height="24" />
@@ -211,7 +211,7 @@ function LoginPage() {
           {/* QQ */}
           <button
             onClick={() => alert(t("login.toast.thirdParty", { p: "QQ" }))}
-            className="flex items-center justify-center rounded-full bg-[#12B7F5] shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+            className="flex items-center justify-center rounded-full bg-[#e3f2fd] border border-[#12B7F5]/15 shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95"
             style={{ width: 48, height: 48 }}
           >
             <img src={QQIcon} alt="QQ" width="24" height="24" />

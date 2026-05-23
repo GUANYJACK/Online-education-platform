@@ -10,7 +10,7 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "Register User",
+          "name": "1. Register User",
           "request": {
             "method": "POST",
             "header": [],
@@ -37,7 +37,7 @@
           "response": []
         },
         {
-          "name": "Login User",
+          "name": "2. Login User",
           "event": [
             {
               "listen": "test",
@@ -81,7 +81,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+              "raw": "{\n  \"email\": \"parent@family.com\",\n  \"password\": \"password123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -97,7 +97,8 @@
                 "auth",
                 "login"
               ]
-            }
+            },
+            "description": "Login the user if input with correct username and password. Returns with a bearer token for later use. For convenience, the token already retrieved by script already can would be passed to later API calls.\n\nYou may test with different role for some already exists account:\n\n1. Student: [student@school.com](https://mailto:student@school.com)\n    \n2. Parent: [parent@family.com](https://mailto:parent@family.com)\n    \n3. Teacher: [teacher@school.com](https://mailto:teacher@school.com)\n    \n4. School Admin: [admin@school.com](https://mailto:admin@school.com)\n    \n\nWhere the password for all account are: **password123**"
           },
           "response": []
         }
@@ -107,7 +108,65 @@
       "name": "Users",
       "item": [
         {
-          "name": "Get Profile",
+          "name": "1. Get User id by Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    throw new Error('Response body is not valid JSON');",
+                  "}",
+                  "",
+                  "if (!jsonData || typeof jsonData.id === 'undefined') {",
+                  "    throw new Error('Response JSON does not contain an id field');",
+                  "}",
+                  "",
+                  "pm.collectionVariables.set('id', String(jsonData.id));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/users/uuid-by-email?email=student@school.com",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "users",
+                "uuid-by-email"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "student@school.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Profile",
           "request": {
             "auth": {
               "type": "bearer",
@@ -136,7 +195,7 @@
           "response": []
         },
         {
-          "name": "Bind Child (Parent Only)",
+          "name": "3. Bind Child (Parent Only)",
           "request": {
             "method": "POST",
             "header": [
@@ -148,7 +207,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"childId\": \"uuid-of-student\"\n}",
+              "raw": "{\n  \"childId\": \"{{id}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -205,7 +264,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"No.1 High School\",\n  \"code\": \"HS001\"\n}",
+              "raw": "{\n  \"name\": \"No.2 High School\",\n  \"code\": \"HS002\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -570,6 +629,10 @@
     },
     {
       "key": "token",
+      "value": ""
+    },
+    {
+      "key": "id",
       "value": ""
     }
   ]

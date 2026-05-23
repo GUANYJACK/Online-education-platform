@@ -18,7 +18,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  const startedAt = Date.now();
+  const requestBody = ['POST', 'PUT', 'PATCH'].includes(req.method) ? req.body : undefined;
+
+  console.log(`[${new Date().toISOString()}] -> ${req.method} ${req.originalUrl}`);
+  if (requestBody !== undefined) {
+    console.log('Body:', requestBody);
+  }
+
+  res.on('finish', () => {
+    const durationMs = Date.now() - startedAt;
+    console.log(`[${new Date().toISOString()}] <- ${req.method} ${req.originalUrl} ${res.statusCode} (${durationMs}ms)`);
+  });
+
   next();
 });
 

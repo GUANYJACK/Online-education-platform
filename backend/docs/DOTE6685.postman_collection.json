@@ -1,0 +1,576 @@
+{
+  "info": {
+    "_postman_id": "5f6f69a2-8c8f-4b1c-a009-5068d8d66a74",
+    "name": "DOTE6685",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "17680738"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "  {\r\n    \"name\": \"John Doe\",\r\n    \"email\": \"john@example.com\",\r\n    \"phone\": \"123456789\",\r\n    \"password\": \"password123\",\r\n    \"role\": \"STUDENT\" // Available Roles: STUDENT, PARENT, TEACHER, SCHOOL_ADMIN\r\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/auth/register",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let json;",
+                  "let token;",
+                  "",
+                  "pm.test('Response body is valid JSON', function () {",
+                  "    pm.expect(function () {",
+                  "        json = pm.response.json();",
+                  "    }).to.not.throw();",
+                  "});",
+                  "",
+                  "if (json) {",
+                  "    token = json.token || json.access_token || json.authToken || json.jwt || (json.data && (json.data.token || json.data.access_token));",
+                  "}",
+                  "",
+                  "pm.test('Token exists in response and is saved', function () {",
+                  "    pm.expect(token, 'Expected a token field in the response body').to.be.a('string').and.not.empty;",
+                  "",
+                  "    if (token) {",
+                  "        pm.collectionVariables.set('token', token);",
+                  "        pm.expect(pm.collectionVariables.get('token')).to.eql(token);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/auth/login",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/users/profile",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ]
+            },
+            "description": "Auth: Required\nSuccess Response: 200 OK - User object"
+          },
+          "response": []
+        },
+        {
+          "name": "Bind Child (Parent Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"childId\": \"uuid-of-student\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/users/bind-child",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "users",
+                "bind-child"
+              ]
+            },
+            "description": "Auth: Required (Role: PARENT)\nSuccess Response: 200 OK - { \"message\": \"Child bound successfully\" }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "School Management",
+      "item": [
+        {
+          "name": "Get All Schools",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/schools",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "schools"
+              ]
+            },
+            "description": "Auth: Required\nSuccess Response: 200 OK - Array of schools"
+          },
+          "response": []
+        },
+        {
+          "name": "Create School",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"No.1 High School\",\n  \"code\": \"HS001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/schools",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "schools"
+              ]
+            },
+            "description": "Auth: Required (Role: SCHOOL_ADMIN)\nSuccess Response: 201 Created - School object"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Class Management",
+      "item": [
+        {
+          "name": "Create Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Math 101\",\n  \"code\": \"MATH101\",\n  \"schoolId\": \"school-uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/classes",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "classes"
+              ]
+            },
+            "description": "Auth: Required (Role: TEACHER, SCHOOL_ADMIN)\nSuccess Response: 201 Created - Class object"
+          },
+          "response": []
+        },
+        {
+          "name": "Join Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"classCode\": \"MATH101\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/classes/join",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "classes",
+                "join"
+              ]
+            },
+            "description": "Auth: Required (Role: STUDENT)\nSuccess Response: 200 OK - { \"message\": \"Successfully joined the class\" }"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Class Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/classes/:classId/students",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "classes",
+                ":classId",
+                "students"
+              ],
+              "variable": [
+                {
+                  "key": "classId"
+                }
+              ]
+            },
+            "description": "Auth: Required (Role: TEACHER, SCHOOL_ADMIN)\nSuccess Response: 200 OK - Array of student user objects"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Student from Class",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/classes/:classId/students/:studentId",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "classes",
+                ":classId",
+                "students",
+                ":studentId"
+              ],
+              "variable": [
+                {
+                  "key": "classId"
+                },
+                {
+                  "key": "studentId"
+                }
+              ]
+            },
+            "description": "Auth: Required (Role: TEACHER, SCHOOL_ADMIN)\nSuccess Response: 200 OK - { \"message\": \"Student removed from class\" }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Learning Progress",
+      "item": [
+        {
+          "name": "Update Progress",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"uuid\",\n  \"knowledgePointId\": \"uuid\",\n  \"mastery\": \"PARTIAL\",\n  \"studyTimeSeconds\": 300\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/progress/update",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "progress",
+                "update"
+              ]
+            },
+            "description": "Auth: Required\nSuccess Response: 200 OK - Updated progress object\nmastery values: UNMASTERED, PARTIAL, MASTERED"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Progress",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/progress/:studentId",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "progress",
+                ":studentId"
+              ],
+              "variable": [
+                {
+                  "key": "studentId"
+                }
+              ]
+            },
+            "description": "Auth: Required\nSuccess Response: 200 OK - Array of progress objects (includes knowledge point/chapter details)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AI & Mental Health",
+      "item": [
+        {
+          "name": "Send Message to AI (Socratic Tutor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"uuid\",\n  \"message\": \"I don't understand fractions.\",\n  \"context\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/ai/chat",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "ai",
+                "chat"
+              ]
+            },
+            "description": "Auth: Required\nSuccess Response: 200 OK - { \"response\": \"Socratic text response...\" }"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Mental Health Analytics (Placeholder)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/ai/mental-health",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "ai",
+                "mental-health"
+              ]
+            },
+            "description": "Auth: Required\nSuccess Response: 200 OK - { \"emotionPolarity\": \"NEUTRAL\", \"riskLevel\": \"LOW\", \"keywords\": \"none\" }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fallback test",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BaseURL}}",
+          "host": [
+            "{{BaseURL}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "jwt",
+    "jwt": [
+      {
+        "key": "secret",
+        "value": "dote6685_jwt_secret",
+        "type": "string"
+      },
+      {
+        "key": "algorithm",
+        "value": "HS256",
+        "type": "string"
+      },
+      {
+        "key": "isSecretBase64Encoded",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "payload",
+        "value": "{}",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "headerPrefix",
+        "value": "Bearer",
+        "type": "string"
+      },
+      {
+        "key": "queryParamKey",
+        "value": "token",
+        "type": "string"
+      },
+      {
+        "key": "header",
+        "value": "{}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BaseURL",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": "",
+      "disabled": true
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

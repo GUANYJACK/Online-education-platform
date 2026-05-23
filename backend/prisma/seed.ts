@@ -6,8 +6,9 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding fake data...');
 
-  // Hash password for all users
-  const password = await bcrypt.hash('password123', 10);
+  // Hash password for all users with an explicit salt
+  const salt = await bcrypt.genSalt(10);
+  const password = await bcrypt.hash('password123', salt);
 
   // 1. Create a School
   const school1 = await prisma.school.upsert({
@@ -19,25 +20,25 @@ async function main() {
   // 2. Create Users (Admin, Teacher, Student, Parent)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@school.com' },
-    update: {},
+    update: { name: 'Admin User', password, role: Role.SCHOOL_ADMIN },
     create: { name: 'Admin User', email: 'admin@school.com', password, role: Role.SCHOOL_ADMIN }
   });
 
   const teacher = await prisma.user.upsert({
     where: { email: 'teacher@school.com' },
-    update: {},
+    update: { name: 'Mr. Smith', password, role: Role.TEACHER },
     create: { name: 'Mr. Smith', email: 'teacher@school.com', password, role: Role.TEACHER }
   });
 
   const student = await prisma.user.upsert({
     where: { email: 'student@school.com' },
-    update: {},
+    update: { name: 'Alice', phone: '1234567890', password, role: Role.STUDENT },
     create: { name: 'Alice', email: 'student@school.com', phone: '1234567890', password, role: Role.STUDENT }
   });
 
   const parent = await prisma.user.upsert({
     where: { email: 'parent@family.com' },
-    update: {},
+    update: { name: 'Alice Parent', password, role: Role.PARENT },
     create: { name: 'Alice Parent', email: 'parent@family.com', password, role: Role.PARENT }
   });
 

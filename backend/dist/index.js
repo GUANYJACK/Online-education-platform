@@ -17,6 +17,19 @@ const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+app.use((req, res, next) => {
+    const startedAt = Date.now();
+    const requestBody = ['POST', 'PUT', 'PATCH'].includes(req.method) ? req.body : undefined;
+    console.log(`[${new Date().toISOString()}] -> ${req.method} ${req.originalUrl}`);
+    if (requestBody !== undefined) {
+        console.log('Body:', requestBody);
+    }
+    res.on('finish', () => {
+        const durationMs = Date.now() - startedAt;
+        console.log(`[${new Date().toISOString()}] <- ${req.method} ${req.originalUrl} ${res.statusCode} (${durationMs}ms)`);
+    });
+    next();
+});
 // Routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/users', user_routes_1.default);
@@ -24,8 +37,21 @@ app.use('/api/progress', progress_routes_1.default);
 app.use('/api/ai', ai_routes_1.default);
 app.use('/api/classes', class_routes_1.default);
 app.use('/api/schools', school_routes_1.default);
+app.get('/', (req, res) => {
+    res.json({ message: 'Backend is running' });
+});
+app.get('/api', (req, res) => {
+    res.json({ message: 'API is running' });
+});
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
+});
+app.use((req, res) => {
+    res.status(404).json({
+        message: 'Fallback API response',
+        method: req.method,
+        path: req.originalUrl
+    });
 });
 app.listen(port, () => {
     console.log('Server is running on port ' + port);

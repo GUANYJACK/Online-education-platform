@@ -56,17 +56,17 @@ export const getStudents = async (req: AuthRequest, res: Response): Promise<void
       }
     }
 
-    const students = await prisma.classStudent.findMany({
-      where: { classId },
-      include: {
-        student: {
-          select: { id: true, name: true, email: true, phone: true }
+    const students = await prisma.user.findMany({
+      where: {
+        role: 'STUDENT',
+        studentClasses: {
+          some: { classId }
         }
-      }
+      },
+      select: { id: true, name: true, email: true, phone: true }
     });
 
-    // Cast needed because TS sometimes doesn't catch select expansions correctly internally with map
-    res.json(students.map((s: any) => s.student));
+    res.json(students);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch students' });
   }

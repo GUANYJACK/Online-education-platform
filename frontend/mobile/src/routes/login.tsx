@@ -6,6 +6,7 @@ import { LanguagePopup } from "@/components/LanguagePopup";
 import { GraduationCap, Smartphone, Mail, User as UserIcon, Lock } from "lucide-react";
 import WeChatIcon from "@/assets/icons8-wechat.svg";
 import QQIcon from "@/assets/icons8-qq.svg";
+import { apiLogin, apiRegister } from "@/lib/api";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "登录 — 智学" }] }),
@@ -20,6 +21,8 @@ function LoginPage() {
   const [code, setCode] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [countdown, setCountdown] = useState(0);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const setLogin = useAppStore((s) => s.setLogin);
   const navigate = useNavigate();
   const t = useT();
@@ -41,20 +44,33 @@ function LoginPage() {
     );
   }, [mode, tab, account, nickname, code, confirmPassword]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
-    setLogin(account, nickname.trim(), "dse");
-    if (mode === "register") {
-      navigate({ to: "/onboarding" });
-    } else {
-      useAppStore.getState().setOnboarded();
-      const r = useAppStore.getState().role;
-      if (!r) {
+    setError("");
+    setLoading(true);
+    try {
+      if (mode === "register") {
+        await apiRegister({
+          name: nickname.trim() || account.split("@")[0] || account,
+          email: tab === "email" ? account : "",
+          phone: tab === "phone" ? account : "",
+          password: code,
+          role: "STUDENT",
+        });
         navigate({ to: "/onboarding" });
       } else {
-        navigate({ to: r === "parent" ? "/parent/overview" : "/student/learn" });
+        const res = await apiLogin(account, code);
+        const role = res.user.role.toLowerCase() === "parent" ? "parent" : "student";
+        setLogin(account, res.user.name, "dse", res.token, res.user.id);
+        useAppStore.getState().setRole(role);
+        useAppStore.getState().setOnboarded();
+        navigate({ to: role === "parent" ? "/parent/overview" : "/student/learn" });
       }
+    } catch (err: any) {
+      setError(err.message || "请求失败");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -178,16 +194,20 @@ function LoginPage() {
             </div>
           )}
 
+          {error && (
+            <p className="rounded-xl bg-destructive/10 px-4 py-2.5 text-xs text-destructive">{error}</p>
+          )}
+
           <button
             type="submit"
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             className={`mt-2 w-full rounded-2xl py-3.5 text-sm font-bold transition-all active:scale-[0.97] ${
-              isFormValid
+              isFormValid && !loading
                 ? "bg-primary/80 text-primary-foreground shadow-lg shadow-primary/15 hover:bg-primary hover:shadow-xl hover:shadow-primary/20"
                 : "bg-muted text-muted-foreground/50 cursor-not-allowed"
             }`}
           >
-            {mode === "login" ? t("login.submit") : t("register.submit")}
+            {loading ? "..." : mode === "login" ? t("login.submit") : t("register.submit")}
           </button>
         </form>
 

@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { parentTabs } from "@/components/mobile/parent-tabs";
-import { subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
 import { PermissionNotice } from "@/components/cards/PermissionNotice";
 import { useT } from "@/lib/i18n";
+import { useAppStore } from "@/lib/store";
 import { BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/parent/subjects")({
@@ -11,7 +13,12 @@ export const Route = createFileRoute("/parent/subjects")({
 });
 
 function ParentSubjects() {
+  const boundChildId = useAppStore((s) => s.boundChildId);
   const t = useT();
+
+  const { data: apiSubjects } = useCurriculum(boundChildId);
+  const subjects = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+
   return (
     <MobileShell title={t("ps.title")} tabs={parentTabs}>
       <div className="space-y-3 stagger-children">
@@ -20,7 +27,7 @@ function ParentSubjects() {
           const mastered = s.chapters.reduce((a, c) => a + c.points.filter((p) => p.mastery === "mastered").length, 0);
           const partial = s.chapters.reduce((a, c) => a + c.points.filter((p) => p.mastery === "partial").length, 0);
           const weak = total - mastered - partial;
-          const pct = Math.round((mastered / total) * 100);
+          const pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
           return (
             <div key={s.id} className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm transition-all hover:shadow-md">
               <div className="flex items-center gap-3">
@@ -40,17 +47,21 @@ function ParentSubjects() {
                 </div>
               </div>
               {/* Stacked progress bar */}
-              <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-muted/40">
-                <div className="bg-mastered transition-all duration-500" style={{ width: `${(mastered / total) * 100}%` }} />
-                <div className="bg-partial transition-all duration-500" style={{ width: `${(partial / total) * 100}%` }} />
-                <div className="bg-weak transition-all duration-500" style={{ width: `${(weak / total) * 100}%` }} />
-              </div>
-              {/* Legend */}
-              <div className="mt-2.5 flex justify-between text-[11px] text-muted-foreground/50">
-                <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-mastered" />{t("ps.legend.mastered", { n: mastered })}</span>
-                <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-partial" />{t("ps.legend.partial", { n: partial })}</span>
-                <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-weak" />{t("ps.legend.weak", { n: weak })}</span>
-              </div>
+              {total > 0 && (
+                <>
+                  <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-muted/40">
+                    <div className="bg-mastered transition-all duration-500" style={{ width: `${(mastered / total) * 100}%` }} />
+                    <div className="bg-partial transition-all duration-500" style={{ width: `${(partial / total) * 100}%` }} />
+                    <div className="bg-weak transition-all duration-500" style={{ width: `${(weak / total) * 100}%` }} />
+                  </div>
+                  {/* Legend */}
+                  <div className="mt-2.5 flex justify-between text-[11px] text-muted-foreground/50">
+                    <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-mastered" />{t("ps.legend.mastered", { n: mastered })}</span>
+                    <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-partial" />{t("ps.legend.partial", { n: partial })}</span>
+                    <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-weak" />{t("ps.legend.weak", { n: weak })}</span>
+                  </div>
+                </>
+              )}
             </div>
           );
         })}

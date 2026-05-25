@@ -29,8 +29,10 @@ interface AppState {
   age: string;
   country: string;
   school: string;
+  token: string | null;
+  userId: string | null;
   aiSessions: AiSession[];
-  setLogin: (account: string, nickname: string, examType: ExamType) => void;
+  setLogin: (account: string, nickname: string, examType: ExamType, token: string, userId: string) => void;
   logout: () => void;
   setRole: (r: Role) => void;
   bindChild: (id: string) => void;
@@ -66,10 +68,12 @@ export const useAppStore = create<AppState>()(
       age: "",
       country: "",
       school: "",
+      token: null,
+      userId: null,
       aiSessions: [],
-      setLogin: (account, nickname, examType) =>
-        set({ loggedIn: true, account, nickname: nickname || account, examType }),
-      logout: () => set({ loggedIn: false, account: "", nickname: "", onboarded: false, gender: "", age: "", country: "", school: "" }),
+      setLogin: (account, nickname, examType, token, userId) =>
+        set({ loggedIn: true, account, nickname: nickname || account, examType, token, userId }),
+      logout: () => set({ loggedIn: false, account: "", nickname: "", onboarded: false, gender: "", age: "", country: "", school: "", token: null, userId: null }),
       setRole: (role) => set({ role }),
       bindChild: (id) => set({ boundChildId: id }),
       completeTest: (score) => set({ testCompleted: true, lastScore: score }),

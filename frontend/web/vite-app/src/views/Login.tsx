@@ -1,5 +1,7 @@
 import { useState, FormEvent } from 'react';
 
+const API_BASE = "https://online-education-platform-backend-kappa.vercel.app/api";
+
 interface LoginProps {
   onLogin: (token: string, user: { id: number; name: string; role: string }) => void;
 }
@@ -18,7 +20,7 @@ export function ViewLogin({ onLogin }: LoginProps) {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -38,7 +40,7 @@ export function ViewLogin({ onLogin }: LoginProps) {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, role }),
@@ -46,7 +48,7 @@ export function ViewLogin({ onLogin }: LoginProps) {
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Registration failed'); return; }
       // Auto-login after register
-      const loginRes = await fetch('/api/auth/login', {
+      const loginRes = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

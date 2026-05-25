@@ -2,7 +2,9 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useState, useRef, useEffect, Fragment, useMemo } from "react";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { studentTabs } from "@/components/mobile/student-tabs";
-import { sensitiveKeywords, subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
+import { apiChat } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
 import { Send, Mic, Sparkles, MessageSquare, ShieldAlert, History, Plus, X, Trash2 } from "lucide-react";
@@ -20,6 +22,7 @@ interface Msg { role: "user" | "ai"; text: string; blocked?: boolean }
 
 function AIChat() {
   const t = useT();
+  const userId = useAppStore((s) => s.userId);
   const { aiSessions, saveSession, removeSession } = useAppStore();
   const { kp, subject: urlSubject, chapter: urlChapter } = Route.useSearch();
   const [mode, setMode] = useState<"free" | "guided">("guided");
@@ -27,8 +30,12 @@ function AIChat() {
   const [sessionId, setSessionId] = useState(() => `s_${Date.now()}`);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+
+  const { data: apiSubjects } = useCurriculum(userId);
+  const subjects = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
 
   const kpIndex = useMemo(
     () =>
@@ -41,7 +48,7 @@ function AIChat() {
           })),
         ),
       ),
-    [t],
+    [t, subjects],
   );
 
   const kpInfo = useMemo(() => {
@@ -57,7 +64,7 @@ function AIChat() {
       subjectName: t(`subj.${subj!.id}`),
       chapterName: t(`ch.${subj!.id}.${chap!.id}`),
     };
-  }, [kp, urlSubject, urlChapter, t]);
+  }, [kp, urlSubject, urlChapter, t, subjects]);
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -107,19 +114,25 @@ function AIChat() {
     setHistoryOpen(false);
   };
 
-  const send = () => {
-    if (!input.trim()) return;
+  const send = async () => {
+    if (!input.trim() || sending) return;
     const text = input.trim();
     setInput("");
-    const blocked = sensitiveKeywords.some((k) => text.includes(k));
     setMessages((m) => [...m, { role: "user", text }]);
-    setTimeout(() => {
-      if (blocked) {
-        setMessages((m) => [...m, { role: "ai", blocked: true, text: t("ai.blocked") }]);
-      } else {
-        setMessages((m) => [...m, { role: "ai", text: t(mode === "guided" ? "ai.reply.guided" : "ai.reply.free") }]);
-      }
-    }, 600);
+    setSending(true);
+    try {
+      const res = await apiChat({
+        studentId: userId || "unknown",
+        message: text,
+        context: kpInfo ? { kp: kpInfo.name, subject: kpInfo.subjectName, chapter: kpInfo.chapterName } : {},
+      });
+      setMessages((m) => [...m, { role: "ai", text: res.response }]);
+    } catch {
+      // Fallback to local reply if API unavailable
+      setMessages((m) => [...m, { role: "ai", text: t(mode === "guided" ? "ai.reply.guided" : "ai.reply.free") }]);
+    } finally {
+      setSending(false);
+    }
   };
 
   const tryVoice = () => alert(t("ai.voiceAlert"));
@@ -233,6 +246,7 @@ function AIChat() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder={t("ai.placeholder")}
+            disabled={sending}
             className="flex-1 rounded-full border border-border/60 bg-muted/40 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary/40 focus:bg-background"
           />
           <button onClick={send} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all active:scale-90">

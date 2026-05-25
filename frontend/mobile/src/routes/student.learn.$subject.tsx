@@ -1,10 +1,12 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MobileShell } from "@/components/mobile/MobileShell";
-import { subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
 import { MasteryBadge } from "@/components/cards/MasteryBadge";
 import { ChevronRight, ChevronDown, Bot, BookOpen } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { useAppStore } from "@/lib/store";
 
 export const Route = createFileRoute("/student/learn/$subject")({
   component: SubjectPage,
@@ -12,7 +14,10 @@ export const Route = createFileRoute("/student/learn/$subject")({
 
 function SubjectPage() {
   const { subject } = Route.useParams();
-  const s = subjects.find((x) => x.id === subject);
+  const userId = useAppStore((s) => s.userId);
+  const { data: apiSubjects } = useCurriculum(userId);
+  const allSubjects = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+  const s = allSubjects.find((x) => x.id === subject);
   const t = useT();
   const navigate = useNavigate();
   const [openChapter, setOpenChapter] = useState<string | null>(null);
@@ -36,6 +41,24 @@ function SubjectPage() {
     0,
   );
 
+  const chapterName = (ch: { id: string; name: string }) => {
+    const key = `ch.${s.id}.${ch.id}`;
+    const translated = t(key);
+    return translated === key ? ch.name : translated;
+  };
+
+  const kpName = (p: { id: string; name: string }) => {
+    const key = `kp.${p.id}.n`;
+    const translated = t(key);
+    return translated === key ? p.name : translated;
+  };
+
+  const kpDesc = (p: { id: string; desc: string }) => {
+    const key = `kp.${p.id}.d`;
+    const translated = t(key);
+    return translated === key ? p.desc : translated;
+  };
+
   return (
     <MobileShell title={t(`subj.${s.id}`)} back>
       {/* Subject stats bar */}
@@ -47,13 +70,13 @@ function SubjectPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground/70">总进度</span>
             <span className="text-xs font-bold text-primary">
-              {Math.round((masteredPoints / totalPoints) * 100)}%
+              {totalPoints > 0 ? Math.round((masteredPoints / totalPoints) * 100) : 0}%
             </span>
           </div>
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted/60">
             <div
               className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
-              style={{ width: `${Math.round((masteredPoints / totalPoints) * 100)}%` }}
+              style={{ width: `${totalPoints > 0 ? Math.round((masteredPoints / totalPoints) * 100) : 0}%` }}
             />
           </div>
         </div>
@@ -79,7 +102,7 @@ function SubjectPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[15px]">{t(`ch.${s.id}.${c.id}`)}</h3>
+                    <h3 className="font-bold text-[15px]">{chapterName(c)}</h3>
                     <span className="text-[10px] text-muted-foreground/50">
                       {chapterMastered}/{c.points.length}
                     </span>
@@ -100,10 +123,10 @@ function SubjectPage() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{t(`kp.${p.id}.n`)}</span>
+                          <span className="text-sm font-medium">{kpName(p)}</span>
                           <MasteryBadge level={p.mastery} />
                         </div>
-                        <p className="mt-0.5 text-xs text-muted-foreground/60 truncate">{t(`kp.${p.id}.d`)}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground/60 truncate">{kpDesc(p)}</p>
                       </div>
                       <div className="flex items-center gap-1 text-xs text-primary/70">
                         <Bot className="h-3.5 w-3.5" />

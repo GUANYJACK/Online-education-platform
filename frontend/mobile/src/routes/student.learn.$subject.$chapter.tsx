@@ -1,9 +1,11 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { MobileShell } from "@/components/mobile/MobileShell";
-import { subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
 import { MasteryBadge } from "@/components/cards/MasteryBadge";
 import { Bot, Sparkles } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { useAppStore } from "@/lib/store";
 
 export const Route = createFileRoute("/student/learn/$subject/$chapter")({
   component: ChapterPage,
@@ -11,7 +13,10 @@ export const Route = createFileRoute("/student/learn/$subject/$chapter")({
 
 function ChapterPage() {
   const { subject, chapter } = Route.useParams();
-  const s = subjects.find((x) => x.id === subject);
+  const userId = useAppStore((s) => s.userId);
+  const { data: apiSubjects } = useCurriculum(userId);
+  const allSubjects = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+  const s = allSubjects.find((x) => x.id === subject);
   const c = s?.chapters.find((x) => x.id === chapter);
   const navigate = useNavigate();
   const t = useT();
@@ -24,8 +29,26 @@ function ChapterPage() {
     });
   };
 
+  const chapterName = (ch: { id: string; name: string }) => {
+    const key = `ch.${s.id}.${ch.id}`;
+    const translated = t(key);
+    return translated === key ? ch.name : translated;
+  };
+
+  const kpName = (p: { id: string; name: string }) => {
+    const key = `kp.${p.id}.n`;
+    const translated = t(key);
+    return translated === key ? p.name : translated;
+  };
+
+  const kpDesc = (p: { id: string; desc: string }) => {
+    const key = `kp.${p.id}.d`;
+    const translated = t(key);
+    return translated === key ? p.desc : translated;
+  };
+
   return (
-    <MobileShell title={t(`ch.${s.id}.${c.id}`)} back>
+    <MobileShell title={chapterName(c)} back>
       <p className="mb-4 text-xs text-muted-foreground/60">
         {t("learn.subjectDot", { s: t(`subj.${s.id}`), n: c.points.length })}
       </p>
@@ -38,8 +61,8 @@ function ChapterPage() {
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-[15px]">{t(`kp.${p.id}.n`)}</h3>
-                <p className="mt-1 text-xs text-muted-foreground/60 leading-relaxed">{t(`kp.${p.id}.d`)}</p>
+                <h3 className="font-bold text-[15px]">{kpName(p)}</h3>
+                <p className="mt-1 text-xs text-muted-foreground/60 leading-relaxed">{kpDesc(p)}</p>
               </div>
               <MasteryBadge level={p.mastery} />
             </div>

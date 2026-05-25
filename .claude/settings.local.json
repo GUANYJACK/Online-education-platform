@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:anysearch.com)",
+      "Bash(python *)",
+      "Bash(curl *)",
+      "Bash(node -e ' *)",
+      "Bash(npm run *)",
+      "Bash(timeout *)",
+      "Bash(taskkill *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)",
+      "Bash(npm install *)",
+      "Bash(npm test *)"
     ]
   }
 }

@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate, notFound } from "@tanstack/react-router";
 import { MobileShell } from "@/components/mobile/MobileShell";
-import { subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
 import { MasteryBadge } from "@/components/cards/MasteryBadge";
 import { useT } from "@/lib/i18n";
 import { Bot, BookOpen, ChevronRight } from "lucide-react";
+import { useAppStore } from "@/lib/store";
 
 export const Route = createFileRoute("/student/knowledge-point")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -16,12 +18,16 @@ export const Route = createFileRoute("/student/knowledge-point")({
 
 function KnowledgePointPage() {
   const { kp, subject: subjectId, chapter: chapterId } = Route.useSearch();
+  const userId = useAppStore((s) => s.userId);
   const t = useT();
   const navigate = useNavigate();
 
+  const { data: apiSubjects } = useCurriculum(userId);
+  const allSubjects = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+
   if (!kp || !subjectId || !chapterId) throw notFound();
 
-  const subj = subjects.find((s) => s.id === subjectId);
+  const subj = allSubjects.find((s) => s.id === subjectId);
   const chap = subj?.chapters.find((c) => c.id === chapterId);
   const point = chap?.points.find((p) => p.id === kp);
 

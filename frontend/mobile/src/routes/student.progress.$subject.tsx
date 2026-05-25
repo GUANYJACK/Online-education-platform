@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MobileShell } from "@/components/mobile/MobileShell";
-import { subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
 import { MasteryBadge } from "@/components/cards/MasteryBadge";
 import { useT } from "@/lib/i18n";
+import { useAppStore } from "@/lib/store";
 import { BookOpen, Play } from "lucide-react";
 
 export const Route = createFileRoute("/student/progress/$subject")({
@@ -11,7 +13,10 @@ export const Route = createFileRoute("/student/progress/$subject")({
 
 function SubjectProgressPage() {
   const { subject } = Route.useParams();
-  const s = subjects.find((x) => x.id === subject);
+  const userId = useAppStore((s) => s.userId);
+  const { data: apiSubjects } = useCurriculum(userId);
+  const allSubjects = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+  const s = allSubjects.find((x) => x.id === subject);
   const t = useT();
 
   if (!s) throw notFound();
@@ -25,11 +30,14 @@ function SubjectProgressPage() {
     (a, c) => a + c.points.filter((p) => p.mastery === "partial").length,
     0,
   );
-  const weakCount = s.chapters.reduce(
-    (a, c) => a + c.points.filter((p) => p.mastery === "weak").length,
-    0,
-  );
-  const masteryRate = Math.round((masteredCount / totalPoints) * 100);
+  const weakCount = totalPoints - masteredCount - partialCount;
+  const masteryRate = totalPoints > 0 ? Math.round((masteredCount / totalPoints) * 100) : 0;
+
+  const chapterName = (ch: { id: string; name: string }) => {
+    const key = `ch.${s.id}.${ch.id}`;
+    const translated = t(key);
+    return translated === key ? ch.name : translated;
+  };
 
   return (
     <MobileShell title={t("progress.subject.title", { s: t(`subj.${s.id}`) })} back>
@@ -54,9 +62,9 @@ function SubjectProgressPage() {
             <span className="font-semibold text-primary">{masteryRate}%</span>
           </div>
           <div className="mt-1.5 flex h-2.5 overflow-hidden rounded-full bg-muted">
-            <div className="h-full bg-mastered transition-all" style={{ width: `${(masteredCount / totalPoints) * 100}%` }} />
-            <div className="h-full bg-partial transition-all" style={{ width: `${(partialCount / totalPoints) * 100}%` }} />
-            <div className="h-full bg-weak transition-all" style={{ width: `${(weakCount / totalPoints) * 100}%` }} />
+            <div className="h-full bg-mastered transition-all" style={{ width: `${totalPoints > 0 ? (masteredCount / totalPoints) * 100 : 0}%` }} />
+            <div className="h-full bg-partial transition-all" style={{ width: `${totalPoints > 0 ? (partialCount / totalPoints) * 100 : 0}%` }} />
+            <div className="h-full bg-weak transition-all" style={{ width: `${totalPoints > 0 ? (weakCount / totalPoints) * 100 : 0}%` }} />
           </div>
           <div className="mt-2 flex items-center gap-4 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1">
@@ -98,18 +106,18 @@ function SubjectProgressPage() {
             <div key={c.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <div className="flex items-center justify-between p-4">
                 <div>
-                  <h3 className="font-semibold">{t(`ch.${s.id}.${c.id}`)}</h3>
+                  <h3 className="font-semibold">{chapterName(c)}</h3>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {t("progress.masteredOf", { m: chapterMastered, t: c.points.length })}
                   </p>
                 </div>
                 <span className="text-sm font-bold text-primary">
-                  {Math.round((chapterMastered / c.points.length) * 100)}%
+                  {c.points.length > 0 ? Math.round((chapterMastered / c.points.length) * 100) : 0}%
                 </span>
               </div>
               <div className="border-t border-border bg-muted/30 p-3 space-y-1.5">
                 {c.points.map((p) => {
-                  const pointName = t(`kp.${p.id}.n`);
+                  const name = t(`kp.${p.id}.n`);
                   return (
                     <Link
                       key={p.id}
@@ -119,7 +127,7 @@ function SubjectProgressPage() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{pointName}</span>
+                          <span className="text-sm font-medium">{name}</span>
                           <MasteryBadge level={p.mastery} />
                         </div>
                       </div>

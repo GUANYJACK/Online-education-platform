@@ -1,29 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { studentTabs } from "@/components/mobile/student-tabs";
-import { subjects } from "@/lib/mock-data";
+import { subjects as mockSubjects, trendData } from "@/lib/mock-data";
+import { useCurriculum, type Subject } from "@/lib/useCurriculum";
 import { MasteryBadge } from "@/components/cards/MasteryBadge";
 import { useT } from "@/lib/i18n";
+import { useAppStore } from "@/lib/store";
 import { BookOpen, TrendingUp, Clock, Award } from "lucide-react";
 
 export const Route = createFileRoute("/student/progress/")({
   component: ProgressPage,
 });
 
-function ProgressPage() {
-  const t = useT();
+interface ProgressPoint {
+  id: string;
+  name: string;
+  desc: string;
+  mastery: "mastered" | "partial" | "weak";
+  subjectId: string;
+  subjectName: string;
+  subjectEmoji: string;
+  chapterId: string;
+  chapterName: string;
+}
 
-  const allPoints = subjects.flatMap((s) =>
+function ProgressPage() {
+  const userId = useAppStore((s) => s.userId);
+  const t = useT();
+  const { data: apiSubjects } = useCurriculum(userId);
+  const subjects: Subject[] = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+
+  const allPoints: ProgressPoint[] = subjects.flatMap((s) =>
     s.chapters.flatMap((c) =>
       c.points.map((p) => ({
-        ...p,
+        id: p.id,
+        name: t(`kp.${p.id}.n`),
+        desc: t(`kp.${p.id}.d`),
+        mastery: p.mastery,
         subjectId: s.id,
         subjectName: t(`subj.${s.id}`),
         subjectEmoji: s.emoji,
         chapterId: c.id,
         chapterName: t(`ch.${s.id}.${c.id}`),
-        pointName: t(`kp.${p.id}.n`),
-        pointDesc: t(`kp.${p.id}.d`),
       })),
     ),
   );
@@ -35,7 +53,7 @@ function ProgressPage() {
 
   const totalPoints = allPoints.length;
   const masteredCount = allPoints.filter((p) => p.mastery === "mastered").length;
-  const totalMastery = Math.round((masteredCount / totalPoints) * 100);
+  const totalMastery = totalPoints > 0 ? Math.round((masteredCount / totalPoints) * 100) : 0;
 
   const subjectOrder = subjects.map((s) => s.id);
   const groupedBySubject = recentPoints.reduce<Record<string, typeof recentPoints>>((acc, p) => {
@@ -51,7 +69,7 @@ function ProgressPage() {
       <div className="mb-5 grid grid-cols-3 gap-2.5">
         <StatCard label={t("progress.totalMastery")} value={`${totalMastery}%`} icon={<TrendingUp className="h-3.5 w-3.5" />} tint="primary" />
         <StatCard label={t("progress.weekTime")} value="3.5h" icon={<Clock className="h-3.5 w-3.5" />} tint="mastered" />
-        <StatCard label={t("progress.completion")} value={`${Math.round((masteredCount / totalPoints) * 100)}%`} icon={<Award className="h-3.5 w-3.5" />} tint="partial" />
+        <StatCard label={t("progress.completion")} value={`${totalMastery}%`} icon={<Award className="h-3.5 w-3.5" />} tint="partial" />
       </div>
 
       <div className="mb-3 flex items-center justify-between">
@@ -78,14 +96,14 @@ function ProgressPage() {
                 <div className="space-y-2">
                   {points.map((p) => (
                     <Link
-                      key={`${p.subjectId}-${p.chapterId}-${p.id}`}
+                      key={`${p.subjectId}-${p.id}`}
                       to="/student/knowledge-point"
                       search={{ kp: p.id, subject: p.subjectId, chapter: p.chapterId }}
                       className="flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-3.5 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">{p.pointName}</span>
+                          <span className="text-sm font-medium truncate">{p.name}</span>
                           <MasteryBadge level={p.mastery} />
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground/60 truncate">

@@ -96,6 +96,15 @@ async function main() {
   }
 
   // 8. Add Mental Health Record
+  await prisma.mentalHealth.deleteMany({
+    where: {
+      studentId: student.id,
+      emotionPolarity: 'POSITIVE',
+      riskLevel: 'LOW',
+      keywords: 'happy, engaged'
+    }
+  });
+
   await prisma.mentalHealth.create({
     data: {
       studentId: student.id,

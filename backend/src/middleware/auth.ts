@@ -9,6 +9,7 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  console.log('[AUTH] authenticate middleware called');
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -22,6 +23,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
       id: decoded.id,
       role: decoded.role
     };
+    console.log('[AUTH] Token valid, userId:', decoded.id, '-> calling next()');
     next();
   } catch (error) {
     res.status(401).json({ error: 'Tokens is invalid or expired' });

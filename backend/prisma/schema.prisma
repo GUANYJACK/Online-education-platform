@@ -1,6 +1,6 @@
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -37,6 +37,7 @@ model User {
   studentClasses ClassStudent[]
   progressRecords Progress[]
   mentalHealthRecords MentalHealth[]
+  chatSessions ChatSession[]
   chatHistories ChatHistory[]
 }
 
@@ -134,14 +135,35 @@ model MentalHealth {
   createdAt        DateTime @default(now())
 }
 
-model ChatHistory {
+model ChatSession {
   id        String   @id @default(uuid())
+  sessionId String   @unique @default(uuid())
   studentId String
   student   User     @relation(fields: [studentId], references: [id])
-  message   String   @db.Text
-  sender    String   
-  modelUsed String?  
+  title     String   @default("Untitled Session")
+  subject   String?
+  topic     String?
+  chatHistories ChatHistory[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastAccessedAt DateTime @updatedAt
+
+  @@index([studentId])
+}
+
+model ChatHistory {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id])
+  message   String
+  sender    String
+  modelUsed String?
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([studentId])
 }
 
 model ForbiddenKeyword {

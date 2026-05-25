@@ -12,11 +12,14 @@
         {
           "name": "1. Register User",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "  {\r\n    \"name\": \"John Doe\",\r\n    \"email\": \"john@example.com\",\r\n    \"phone\": \"123456789\",\r\n    \"password\": \"password123\",\r\n    \"role\": \"STUDENT\" // Available Roles: STUDENT, PARENT, TEACHER, SCHOOL_ADMIN\r\n  }",
+              "raw": "  {\r\n    \"name\": \"Joh\",\r\n    \"email\": \"john2@example.com\",\r\n    \"phone\": \"\",\r\n    \"password\": \"password123\",\r\n    \"role\": \"STUDENT\" // Available Roles: STUDENT, PARENT, TEACHER, SCHOOL_ADMIN\r\n  }",
               "options": {
                 "raw": {
                   "language": "json"
@@ -72,6 +75,9 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -476,10 +482,107 @@
       ]
     },
     {
-      "name": "AI & Mental Health",
+      "name": "AI & Socratic Tutoring",
       "item": [
         {
-          "name": "Send Message to AI (Socratic Tutor)",
+          "name": "1. Create Chat Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {},
+                "exec": [
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    throw new Error('Response body is not valid JSON');",
+                  "}",
+                  "",
+                  "const sessionId = jsonData && jsonData.session && (jsonData.session.id || jsonData.session.sessionId);",
+                  "if (!sessionId) {",
+                  "    throw new Error('Response JSON does not contain a session id');",
+                  "}",
+                  "",
+                  "pm.collectionVariables.set('chatSessionId', String(sessionId));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Algebra Help\",\n  \"subject\": \"Mathematics\",\n  \"topic\": \"Quadratic Equations\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/ai/sessions",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "ai",
+                "sessions"
+              ]
+            },
+            "description": "Auth: Required\nCreate a new chat session and save the returned session id to {{chatSessionId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Student Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/ai/sessions",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "ai",
+                "sessions"
+              ]
+            },
+            "description": "Auth: Required\nReturns all chat sessions for the authenticated student."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Session Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/ai/sessions/{{chatSessionId}}",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "ai",
+                "sessions",
+                "{{chatSessionId}}"
+              ]
+            },
+            "description": "Auth: Required\nReturns full conversation history for a session."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Send Message in Session",
           "request": {
             "method": "POST",
             "header": [
@@ -491,7 +594,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"studentId\": \"uuid\",\n  \"message\": \"I don't understand fractions.\",\n  \"context\": {}\n}",
+              "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"I don't understand fractions.\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -508,15 +611,44 @@
                 "chat"
               ]
             },
-            "description": "Auth: Required\nSuccess Response: 200 OK - { \"response\": \"Socratic text response...\" }"
+            "description": "Auth: Required\nSend a student message within a specific chat session."
           },
           "response": []
         },
         {
-          "name": "Get Mental Health Analytics (Placeholder)",
+          "name": "5. Delete Chat Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BaseURL}}/ai/sessions/{{chatSessionId}}",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "ai",
+                "sessions",
+                "{{chatSessionId}}"
+              ]
+            },
+            "description": "Auth: Required\nDeletes the selected chat session and its messages."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Mental Health Check (Placeholder)",
           "request": {
             "method": "POST",
             "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"text\":\"I am feeling sad and very stressed about exams.\",\r\n    \"useOpenRouter\": true \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{BaseURL}}/ai/mental-health",
               "host": [
@@ -527,7 +659,7 @@
                 "mental-health"
               ]
             },
-            "description": "Auth: Required\nSuccess Response: 200 OK - { \"emotionPolarity\": \"NEUTRAL\", \"riskLevel\": \"LOW\", \"keywords\": \"none\" }"
+            "description": "Auth: Required\nSuccess Response: 200 OK - { \"emotionPolarity\": \"NEUTRAL\", \"riskLevel\": \"LOW\", \"keywords\": [] }"
           },
           "response": []
         }
@@ -633,6 +765,10 @@
     },
     {
       "key": "id",
+      "value": ""
+    },
+    {
+      "key": "chatSessionId",
       "value": ""
     }
   ]

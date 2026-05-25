@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authorizeRole = exports.authenticate = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const authenticate = (req, res, next) => {
+    console.log('[AUTH] authenticate middleware called');
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -18,6 +19,7 @@ const authenticate = (req, res, next) => {
             id: decoded.id,
             role: decoded.role
         };
+        console.log('[AUTH] Token valid, userId:', decoded.id, '-> calling next()');
         next();
     }
     catch (error) {

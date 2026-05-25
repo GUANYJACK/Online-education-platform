@@ -1,6 +1,7 @@
 # Backend API Documentation
 
 Base URL: `http://localhost:3000/api`
+https://online-education-platform-backend-kappa.vercel.app/api/
 
 ## Authentication
 
@@ -143,24 +144,163 @@ All protected routes require an `Authorization` header with a Bearer token:
 
 ---
 
-## AI & Mental Health
+## AI & Socratic Tutoring (Session-Based with Memory)
 
-### 1. Send Message to AI (Socratic Tutor)
+All AI endpoints maintain conversation history. Each session stores the last 10 messages for context-aware responses.
+
+### 1. Create Chat Session
+- **URL**: `/ai/sessions`
+- **Method**: `POST`
+- **Auth**: Required
+- **Body**: 
+  ```json
+  {
+    "title": "Algebra Help",
+    "subject": "Mathematics",
+    "topic": "Quadratic Equations"
+  }
+  ```
+- **Success Response**: `201 Created`
+  ```json
+  {
+    "session": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "sessionId": "uuid-string",
+      "studentId": "student-id",
+      "title": "Algebra Help",
+      "subject": "Mathematics",
+      "topic": "Quadratic Equations",
+      "createdAt": "2026-05-25T10:30:00Z",
+      "updatedAt": "2026-05-25T10:30:00Z"
+    }
+  }
+  ```
+
+### 2. Get All Student Sessions
+- **URL**: `/ai/sessions`
+- **Method**: `GET`
+- **Auth**: Required
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "sessions": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "sessionId": "uuid-string",
+        "studentId": "student-id",
+        "title": "Algebra Help",
+        "subject": "Mathematics",
+        "topic": "Quadratic Equations",
+        "createdAt": "2026-05-25T10:30:00Z",
+        "lastAccessedAt": "2026-05-25T11:45:00Z",
+        "chatHistories": [
+          {
+            "id": "msg-id",
+            "message": "What is a quadratic equation?",
+            "sender": "USER",
+            "createdAt": "2026-05-25T11:45:00Z"
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
+### 3. Get Session Details with Full History
+- **URL**: `/ai/sessions/:sessionId`
+- **Method**: `GET`
+- **Auth**: Required
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "session": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "sessionId": "uuid-string",
+      "studentId": "student-id",
+      "title": "Algebra Help",
+      "subject": "Mathematics",
+      "topic": "Quadratic Equations",
+      "createdAt": "2026-05-25T10:30:00Z",
+      "lastAccessedAt": "2026-05-25T11:45:00Z",
+      "chatHistories": [
+        {
+          "id": "msg-1",
+          "message": "What is a quadratic equation?",
+          "sender": "USER",
+          "createdAt": "2026-05-25T10:31:00Z"
+        },
+        {
+          "id": "msg-2",
+          "message": "Great question! Think about what makes an equation 'quadratic'. What do you notice about equations with x²?",
+          "sender": "AI",
+          "modelUsed": "gpt-4o-mini",
+          "createdAt": "2026-05-25T10:32:00Z"
+        }
+      ]
+    }
+  }
+  ```
+
+### 4. Send Message in Session (Automatic Context Memory)
 - **URL**: `/ai/chat`
 - **Method**: `POST`
 - **Auth**: Required
 - **Body**: 
   ```json
   {
-    "studentId": "uuid",
-    "message": "I don't understand fractions.",
-    "context": {}
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "message": "So the general form is ax² + bx + c = 0?"
   }
   ```
-- **Success Response**: `200 OK` - `{ "response": "Socratic text response..." }`
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "response": "Perfect! You've got it. Now, what do you think 'a', 'b', and 'c' represent in that equation?",
+    "modelUsed": "gpt-4o-mini",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000"
+  }
+  ```
+- **Error Response**: `403 Forbidden` (Content Filtering)
+  ```json
+  {
+    "error": "Message contains prohibited content and has been blocked."
+  }
+  ```
 
-### 2. Get Mental Health Analytics (Placeholder)
+### 5. Delete Chat Session
+- **URL**: `/ai/sessions/:sessionId`
+- **Method**: `DELETE`
+- **Auth**: Required
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "message": "Session deleted successfully"
+  }
+  ```
+
+### 6. Mental Health Check (Placeholder)
 - **URL**: `/ai/mental-health`
 - **Method**: `POST`
 - **Auth**: Required
-- **Success Response**: `200 OK` - `{ "emotionPolarity": "NEUTRAL", "riskLevel": "LOW", "keywords": "none" }`
+- **Success Response**: `200 OK`
+  ```json
+  {
+    "emotionPolarity": "NEUTRAL",
+    "riskLevel": "LOW",
+    "keywords": []
+  }
+  ```
+
+---
+
+## AI Chatbot Features
+
+- **Session-Based Memory**: Each session maintains separate conversations
+- **Context-Aware Responses**: Last 10 messages automatically included for coherent responses
+- **Socratic Method**: AI guides learning through questioning
+- **Content Filtering**: Automatically blocks prohibited topics
+- **Multi-Model Support**: Configurable AI model (OpenRouter)
+- **User Isolation**: Students can only access their own sessions
+
+For detailed API documentation, see [SOCRATIC_CHATBOT.md](./SOCRATIC_CHATBOT.md)
+For frontend integration examples, see [CHATBOT_FRONTEND_INTEGRATION.md](./CHATBOT_FRONTEND_INTEGRATION.md)

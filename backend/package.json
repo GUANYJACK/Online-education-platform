@@ -4,9 +4,20 @@
     "description":  "",
     "main":  "index.js",
     "scripts":  {
+<<<<<<< Updated upstream
                     "build":  "prisma generate && tsc",
                     "dev":  "nodemon src/index.ts",
                     "start":  "node dist/src/index.js"
+=======
+        "build": "tsc",
+        "dev": "nodemon src/index.ts",
+        "start": "node dist/src/index.js",
+        "prisma:generate": "prisma generate",
+        "db:migrate": "prisma migrate deploy",
+        "db:seed": "prisma db seed",
+        "db:init": "prisma migrate deploy && prisma db seed",
+        "db:reset": "prisma migrate reset --force"
+>>>>>>> Stashed changes
                 },
     "keywords":  [
 

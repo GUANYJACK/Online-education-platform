@@ -253,6 +253,15 @@
   animation: slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ─── Slide in from right for drawers ─── */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.slide-in-right {
+  animation: slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* ─── Fade in ─── */
 @keyframes fade-in {
   from { opacity: 0; }

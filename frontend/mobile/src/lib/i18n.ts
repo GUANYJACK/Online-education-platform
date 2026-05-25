@@ -105,7 +105,8 @@ const dicts: Record<Lang, Dict> = {
     "ai.reply.guided": "很好的思考!顶点式中,顶点坐标就是 (h, k)。那 a 决定了什么呢?",
     "ai.reply.free": "这是一个很好的问题。简单来说,可以从以下三方面理解……(示例回答)",
     "ai.voiceAlert": "语音输入已识别(占位):请讲解一下二次函数",
-    "ai.switchConfirm": "切换模式将清空当前对话，确定要继续吗？",
+    "ai.error.prefix": "AI 服务暂时不可用，请稍后重试。\n错误详情：",
+    "ai.error.unknown": "未知错误",
 
     "test.title": "能力提升",
     "test.lastScore": "上次测试得分",
@@ -439,7 +440,8 @@ const dicts: Record<Lang, Dict> = {
     "ai.reply.guided": "很好的思考!頂點式中,頂點座標就是 (h, k)。那 a 決定了什麼呢?",
     "ai.reply.free": "這是一個很好的問題。簡單來說,可以從以下三方面理解……(範例回答)",
     "ai.voiceAlert": "語音輸入已識別(佔位):請講解一下二次函數",
-    "ai.switchConfirm": "切換模式將清空當前對話，確定要繼續嗎？",
+    "ai.error.prefix": "AI 服務暫時不可用，請稍後重試。\n錯誤詳情：",
+    "ai.error.unknown": "未知錯誤",
 
     "test.title": "能力提升",
     "test.lastScore": "上次測驗得分",
@@ -772,7 +774,8 @@ const dicts: Record<Lang, Dict> = {
     "ai.reply.guided": "Great thinking! In vertex form, the vertex is (h, k). So what does 'a' control?",
     "ai.reply.free": "Great question. In short, you can think about it in three parts… (sample answer)",
     "ai.voiceAlert": "Voice input recognized (placeholder): Please explain quadratic functions",
-    "ai.switchConfirm": "Switching mode will clear the current conversation. Continue?",
+    "ai.error.prefix": "AI service is temporarily unavailable. Please try again later.\nError: ",
+    "ai.error.unknown": "Unknown error",
 
     "test.title": "Ability Boost",
     "test.lastScore": "Last test score",

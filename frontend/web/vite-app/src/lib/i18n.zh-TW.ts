@@ -3,6 +3,7 @@
 
 export const ZH_TW: Record<string, string> = {
   // ── Brand / nav ───────────────────────────────────────────────────────
+  'Smart Learn': '智學',
   'Teacher Console': '教師工作台',
   'Admin Console': '管理員工作台',
   'Teach': '教學',
@@ -210,6 +211,20 @@ export const ZH_TW: Record<string, string> = {
   'Neutral': '中性',
   'Positive': '正向',
   'Reserved interface': '預留介面',
+
+  // ── Login / register ──────────────────────────────────────────────────
+  'Sign in': '登入',
+  'Create account': '建立帳號',
+  'Full name': '姓名',
+  'Email': '電子郵件',
+  'Password': '密碼',
+  'School Admin': '學校管理員',
+  'Parent': '家長',
+  'Signing in…': '登入中…',
+  'Creating account…': '建立中…',
+  'Login failed': '登入失敗',
+  'Registration failed': '註冊失敗',
+  'Min. 8 characters': '至少 8 個字元',
 
   // ── Join school ───────────────────────────────────────────────────────
   'Join your school': '加入學校',

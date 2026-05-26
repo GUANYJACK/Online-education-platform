@@ -1,14 +1,27 @@
 import { useState, FormEvent } from 'react';
-import { t } from '../lib/i18n';
+import type { Lang } from '../types';
+import { setLang as setI18nLang, t, useLang } from '../lib/i18n';
+import { classNames } from '../lib/format';
 
 interface JoinSchoolProps {
   onJoin: () => void;
 }
 
 export function ViewJoinSchool({ onJoin }: JoinSchoolProps) {
+  const [lang, setLangState] = useState<Lang>(
+    () => (localStorage.getItem('lumen_lang') as Lang) || 'en',
+  );
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useLang();
+
+  function handleLangChange(l: Lang) {
+    setLangState(l);
+    setI18nLang(l);
+    localStorage.setItem('lumen_lang', l);
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -21,14 +34,34 @@ export function ViewJoinSchool({ onJoin }: JoinSchoolProps) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-brand">
-          <div className="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-              <path d="M4 18 12 4l8 14H4z" fill="currentColor" />
-              <circle cx="12" cy="14" r="2.5" fill="var(--bg-elev)" />
-            </svg>
+        <div className="auth-card__toprow">
+          <div className="auth-brand">
+            <div className="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M4 18 12 4l8 14H4z" fill="currentColor" />
+                <circle cx="12" cy="14" r="2.5" fill="var(--bg-elev)" />
+              </svg>
+            </div>
+            <span className="auth-brand__name">{t('Smart Learn')}</span>
           </div>
-          <span className="auth-brand__name">Lumen</span>
+          <div className="role-switch" role="tablist" aria-label="Language">
+            <button
+              role="tab"
+              aria-selected={lang === 'en'}
+              className={classNames('role-switch__opt', lang === 'en' && 'is-active')}
+              onClick={() => handleLangChange('en')}
+            >
+              EN
+            </button>
+            <button
+              role="tab"
+              aria-selected={lang === 'zh-TW'}
+              className={classNames('role-switch__opt', lang === 'zh-TW' && 'is-active')}
+              onClick={() => handleLangChange('zh-TW')}
+            >
+              繁中
+            </button>
+          </div>
         </div>
 
         <div style={{ marginBottom: 20 }}>

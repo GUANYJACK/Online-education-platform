@@ -44,7 +44,7 @@ export function Sidebar({ view, onNavigate, role, collapsed, onCollapsedToggle, 
         </div>
         {!collapsed && (
           <div className="brand-text">
-            <div className="brand-name">Lumen</div>
+            <div className="brand-name">{t('Smart Learn')}</div>
             <div className="brand-tag">{role === 'admin' ? t('Admin Console') : t('Teacher Console')}</div>
           </div>
         )}

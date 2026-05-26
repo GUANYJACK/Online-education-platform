@@ -221,8 +221,8 @@ function NeedsReview({ classes, onNavigate }: { classes: Klass[]; onNavigate: (n
           {worst.map((r, i) => (
             <tr key={i} onClick={() => onNavigate({ view: 'class-detail', classId: r.classId, focusPointId: r.point.id })}>
               <td>
-                <div className="table__primary">{r.point.name}</div>
-                <div className="table__sub">{r.point.chapterName}</div>
+                <div className="table__primary">{t(r.point.name)}</div>
+                <div className="table__sub">{r.point.chapterName ? t(r.point.chapterName) : ''}</div>
               </td>
               <td><Pill tone="neutral">{classDisplayName({ name: r.className })}</Pill></td>
               <td><StackedMasteryBar dist={r.dist} /></td>

@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react';
 import type { Klass, KnowledgePoint, Student } from '../types';
 import { classNames } from '../lib/format';
+import { t } from '../lib/i18n';
 import type { MasteryDist } from '../lib/mastery';
 import { Avatar } from './primitives';
 
@@ -62,9 +63,9 @@ export function MasteryHeatmap({
           <div
             key={p.id}
             className={classNames('hm__col-label', focusPointId === p.id && 'hm__col-label--focus')}
-            title={`${p.chapterName ?? ''} — ${p.name}`}
+            title={`${p.chapterName ? t(p.chapterName) : ''} — ${t(p.name)}`}
           >
-            <span>{p.name}</span>
+            <span>{t(p.name)}</span>
           </div>
         ))}
       </div>
@@ -87,7 +88,7 @@ export function MasteryHeatmap({
                       focusPointId === p.id && 'hm__cell--col-focus',
                       focusStudentId === s.id && 'hm__cell--row-focus',
                     )}
-                    title={`${s.name} — ${p.name}: ${lvl}`}
+                    title={`${s.name} — ${t(p.name)}: ${lvl}`}
                     onClick={() => onCell?.(s, p)}
                   />
                 );
@@ -153,8 +154,8 @@ export function PointMasteryRow({
     <button className={classNames('pmr', isFocus && 'pmr--focus')} onClick={onClick}>
       <div className="pmr__head">
         <div className="pmr__title">
-          <span className="pmr__chapter">{point.chapterName}</span>
-          <span className="pmr__name">{point.name}</span>
+          <span className="pmr__chapter">{point.chapterName ? t(point.chapterName) : ''}</span>
+          <span className="pmr__name">{t(point.name)}</span>
         </div>
         <div className="pmr__pct">{Math.round((dist.mastered + dist.partial * 0.5) * 100)}%</div>
       </div>
@@ -168,9 +169,9 @@ export function PointMasteryRow({
         </div>
       )}
       <div className="pmr__counts">
-        <span><i className="dotswatch dotswatch--mastered" /> {Math.round(dist.mastered * dist.total)} mastered</span>
-        <span><i className="dotswatch dotswatch--partial" />  {Math.round(dist.partial  * dist.total)} partial</span>
-        <span><i className="dotswatch dotswatch--not" />      {Math.round(dist.not      * dist.total)} not yet</span>
+        <span><i className="dotswatch dotswatch--mastered" /> {Math.round(dist.mastered * dist.total)} {t('mastered')}</span>
+        <span><i className="dotswatch dotswatch--partial" />  {Math.round(dist.partial  * dist.total)} {t('partial')}</span>
+        <span><i className="dotswatch dotswatch--not" />      {Math.round(dist.not      * dist.total)} {t('not yet')}</span>
       </div>
     </button>
   );

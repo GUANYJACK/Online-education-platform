@@ -736,12 +736,17 @@ img, svg { display: block; }
   color: var(--text-3);
   text-align: center;
   padding: 4px 0;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  height: 90px;
+  height: 140px;
   line-height: 1.1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.hm__col-label > span { display: inline-block; max-height: 86px; overflow: hidden; }
+.hm__col-label > span {
+  display: inline-block;
+  white-space: nowrap;
+  transform: rotate(-90deg);
+}
 .hm__col-label--focus { color: var(--accent); font-weight: 600; }
 
 .hm__rows { display: contents; }
@@ -1213,11 +1218,16 @@ img, svg { display: block; }
   box-shadow: var(--shadow-lg);
   padding: 36px 32px 32px;
 }
+.auth-card__toprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
 .auth-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 28px;
 }
 .auth-brand__name {
   font-size: 18px;

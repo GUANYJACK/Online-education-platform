@@ -38,7 +38,9 @@ function initialNav(user: AuthUser | null): NavState {
 }
 
 export function App() {
-  const [lang, setLangState] = useState<Lang>('en');
+  const [lang, setLangState] = useState<Lang>(
+    () => (localStorage.getItem('lumen_lang') as Lang) || 'en',
+  );
   const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
     try { return JSON.parse(localStorage.getItem('lumen_user') || 'null'); } catch { return null; }
   });
@@ -54,7 +56,10 @@ export function App() {
 
   useLang();
 
-  useEffect(() => { setLang(lang); }, [lang]);
+  useEffect(() => {
+    setLang(lang);
+    localStorage.setItem('lumen_lang', lang);
+  }, [lang]);
 
   useEffect(() => {
     const root = document.documentElement;

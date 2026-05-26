@@ -24,7 +24,11 @@ export function Sidebar({ view, onNavigate, role, collapsed, onCollapsedToggle, 
     { id: 'mental-health', label: t('Mental Health'), icon: 'heart' },
   ];
   const adminItems: NavItem[] = [
-    { id: 'admin-school', label: t('School Overview'), icon: 'school' },
+    { id: 'admin-school',    label: t('School Overview'), icon: 'school' },
+    { id: 'admin-grade',     label: t('Grade View'),      icon: 'grid'   },
+    { id: 'admin-classes',   label: t('All Classes'),     icon: 'book'   },
+    { id: 'admin-teachers',  label: t('Teachers'),        icon: 'users'  },
+    { id: 'mental-health',   label: t('Mental Health'),   icon: 'heart'  },
   ];
 
   const goTo = (id: string) => onNavigate({ view: id });
@@ -41,23 +45,27 @@ export function Sidebar({ view, onNavigate, role, collapsed, onCollapsedToggle, 
         {!collapsed && (
           <div className="brand-text">
             <div className="brand-name">Lumen</div>
-            <div className="brand-tag">{t('Teacher Console')}</div>
+            <div className="brand-tag">{role === 'admin' ? t('Admin Console') : t('Teacher Console')}</div>
           </div>
         )}
       </div>
 
       <nav className="sidebar__nav">
-        <div className="sidebar__group-label">{!collapsed && t('Teach')}</div>
-        {items.map((it) => (
-          <button
-            key={it.id}
-            className={classNames('navitem', view === it.id && 'navitem--active')}
-            onClick={() => goTo(it.id)}
-          >
-            <Icon name={it.icon} />
-            {!collapsed && <span>{it.label}</span>}
-          </button>
-        ))}
+        {role === 'teacher' && (
+          <>
+            <div className="sidebar__group-label">{!collapsed && t('Teach')}</div>
+            {items.map((it) => (
+              <button
+                key={it.id}
+                className={classNames('navitem', view === it.id && 'navitem--active')}
+                onClick={() => goTo(it.id)}
+              >
+                <Icon name={it.icon} />
+                {!collapsed && <span>{it.label}</span>}
+              </button>
+            ))}
+          </>
+        )}
         {role === 'admin' && (
           <>
             <div className="sidebar__group-label">{!collapsed && t('Administration')}</div>

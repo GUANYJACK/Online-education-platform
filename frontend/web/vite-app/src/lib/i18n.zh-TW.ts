@@ -4,6 +4,7 @@
 export const ZH_TW: Record<string, string> = {
   // ── Brand / nav ───────────────────────────────────────────────────────
   'Teacher Console': '教師工作台',
+  'Admin Console': '管理員工作台',
   'Teach': '教學',
   'Administration': '行政管理',
   'Dashboard': '總覽',
@@ -18,6 +19,7 @@ export const ZH_TW: Record<string, string> = {
   'Expand': '展開側欄',
   'Profile': '個人資料',
   'Sign out': '登出',
+  'Log out': '登出',
   'Mark all read': '全部標為已讀',
   'Activity alerts': '動態提醒',
   'Weekly digest': '每週摘要',
@@ -209,6 +211,36 @@ export const ZH_TW: Record<string, string> = {
   'Positive': '正向',
   'Reserved interface': '預留介面',
 
+  // ── Join school ───────────────────────────────────────────────────────
+  'Join your school': '加入學校',
+  'Enter the code provided by your school administrator.': '請輸入學校管理員提供的邀請碼。',
+  'School code': '學校代碼',
+  'Join school': '加入學校',
+  'Joining…': '加入中…',
+  'Skip for now': '暫時略過',
+  'Please enter a school code': '請輸入學校代碼',
+
+  // ── Admin nav ─────────────────────────────────────────────────────────
+  'Grade View': '年級檢視',
+  'All Classes': '全部班級',
+  'Teachers': '教師',
+
+  // ── Admin grade view ──────────────────────────────────────────────────
+  'Compare classes within each grade level': '比較各年級班級表現',
+  'Grade {n} classes': '{n} 年級班級',
+  'Subjects taught': '授課科目',
+  '{n} teachers': '{n} 位教師',
+
+  // ── Admin classes view ────────────────────────────────────────────────
+  '{n} classes total': '共 {n} 個班級',
+
+  // ── Remove student ────────────────────────────────────────────────────
+  'Remove': '移除',
+  'Confirm': '確認',
+  'Cancel': '取消',
+  'Unassigned': '未指派',
+  'View': '查看',
+
   // ── Admin school view ─────────────────────────────────────────────────
   '{term} · {students} students · {teachers} teachers · {grades}': '{term} · {students} 名學生 · {teachers} 名教師 · {grades}',
   'vs. last term': '相較上學期',
@@ -300,6 +332,47 @@ export const ZH_TW: Record<string, string> = {
   'just now': '剛剛',
   '{n}h ago': '{n} 小時前',
   '{n}d ago': '{n} 天前',
+
+  // ── Subscription modal ────────────────────────────────────────────────
+  'Simple, transparent pricing. Cancel anytime.': '簡單透明的定價，隨時可取消。',
+  'Most popular': '最受歡迎',
+  'Free': '免費版',
+  'Pro': '專業版',
+  'School': '學校版',
+  '/mo': '/月',
+  '/mo per teacher': '/月・每位教師',
+  'Get started with the basics.': '從基本功能開始使用。',
+  'Everything a teacher needs.': '教師所需的完整功能。',
+  'Institution-wide rollout.': '全校整體導入方案。',
+  'Current plan': '目前方案',
+  'Upgrade to Pro': '升級至專業版',
+  'Contact sales': '聯繫銷售',
+  '1 class': '1 個班級',
+  'Up to 30 students': '最多 30 名學生',
+  'Mastery tracking': '掌握度追蹤',
+  'Basic reports': '基本報告',
+  'Unlimited classes': '無限班級',
+  'Unlimited students': '無限學生人數',
+  'AI summaries': 'AI 摘要',
+  'Mental health module': '心理健康模組',
+  'Export reports': '匯出報告',
+  'Priority support': '優先技術支援',
+  'All Pro features': '所有專業版功能',
+  'Admin dashboard': '管理儀表板',
+  'School-wide analytics': '全校數據分析',
+  'SSO / LMS integration': 'SSO / LMS 整合',
+  'Dedicated CSM': '專屬客戶成功經理',
+  'SLA guarantee': 'SLA 服務保障',
+
+  // ── Notifications panel ───────────────────────────────────────────────
+  'Lin Yu mastered Pythagoras': 'Lin Yu 已掌握「畢氏定理」',
+  '3 students flagged for medium risk in Grade 7B': '7B 班有 3 名學生被標記為中等風險',
+  'Assessment results ready for Grade 7B Math': '7B 班數學評估結果已就緒',
+  'New student joined Grade 7A Math': '有新學生加入 7A 班數學',
+  '2h ago': '2 小時前',
+  'Yesterday': '昨天',
+  '1d ago': '1 天前',
+  '3d ago': '3 天前',
 
   // ── Tweaks ────────────────────────────────────────────────────────────
   'Role': '角色',

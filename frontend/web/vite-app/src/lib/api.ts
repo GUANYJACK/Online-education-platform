@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+const API_BASE =
+  import.meta.env.VITE_API_BASE ??
+  "https://online-education-platform-backend-kappa.vercel.app/api";
 
 export interface AuthUser {
   id: number;

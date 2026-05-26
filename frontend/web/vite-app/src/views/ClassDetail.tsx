@@ -214,9 +214,13 @@ export function ViewClassDetail({ klass, onNavigate, focusPointId, tweak }: View
 
 function ClassStudentsList({ klass, onNavigate }: { klass: Klass; onNavigate: (n: NavState) => void }) {
   const [sort, setSort] = useState('mastery');
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+
   const subject = SUBJECTS.find((s) => s.id === klass.subjectId)!;
   const riskOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const sorted = [...klass.students].sort((a, b) => {
+  const visible = klass.students.filter((s) => !removedIds.has(s.id));
+  const sorted = [...visible].sort((a, b) => {
     if (sort === 'name') return a.name.localeCompare(b.name);
     if (sort === 'mastery') return b.baseline - a.baseline;
     if (sort === 'low-mastery') return a.baseline - b.baseline;
@@ -224,11 +228,17 @@ function ClassStudentsList({ klass, onNavigate }: { klass: Klass; onNavigate: (n
     if (sort === 'risk') return riskOrder[a.risk] - riskOrder[b.risk];
     return 0;
   });
+
+  function confirmRemove(id: string) {
+    setRemovedIds((prev) => new Set([...prev, id]));
+    setPendingRemoveId(null);
+  }
+
   return (
     <Card padded={false}>
       <div className="toolbar">
         <span className="toolbar__title">
-          {t('{n} students · {subject}', { n: klass.students.length, subject: subjectLabel(subject) })}
+          {t('{n} students · {subject}', { n: visible.length, subject: subjectLabel(subject) })}
         </span>
         <FilterSelect label={t('Sort')} value={sort} onChange={setSort}
           options={[
@@ -248,7 +258,7 @@ function ClassStudentsList({ klass, onNavigate }: { klass: Klass; onNavigate: (n
             <th>{t('Study time')}</th>
             <th>{t('Last active')}</th>
             <th>{t('Risk')}</th>
-            <th style={{ width: 40 }} />
+            <th style={{ width: 110, textAlign: 'right' }} />
           </tr>
         </thead>
         <tbody>
@@ -273,8 +283,33 @@ function ClassStudentsList({ klass, onNavigate }: { klass: Klass; onNavigate: (n
               <td>{fmtMinutes(s.studyMinutes)}</td>
               <td>{lastActiveStr(s.lastActiveHours)}</td>
               <td><RiskBadge level={s.risk} /></td>
-              <td onClick={(e) => e.stopPropagation()}>
-                <button className="iconbtn iconbtn--sm"><Icon name="more" size={16} /></button>
+              <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                {pendingRemoveId === s.id ? (
+                  <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                    <button
+                      className="btn btn--ghost"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px', color: 'var(--risk-high)' }}
+                      onClick={() => confirmRemove(s.id)}
+                    >
+                      {t('Confirm')}
+                    </button>
+                    <button
+                      className="btn btn--ghost"
+                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                      onClick={() => setPendingRemoveId(null)}
+                    >
+                      {t('Cancel')}
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    className="link"
+                    style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}
+                    onClick={() => setPendingRemoveId(s.id)}
+                  >
+                    {t('Remove')}
+                  </button>
+                )}
               </td>
             </tr>
           ))}

@@ -41,6 +41,8 @@ const TIERS = [
   },
 ];
 
+// 'Custom' price is untranslated intentionally (brand term)
+
 export function SubscriptionModal({ onClose }: SubscriptionModalProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -54,7 +56,7 @@ export function SubscriptionModal({ onClose }: SubscriptionModalProps) {
         <div className="modal-header">
           <div>
             <div className="modal-title">{t('Subscription')}</div>
-            <div className="modal-sub">Simple, transparent pricing. Cancel anytime.</div>
+            <div className="modal-sub">{t('Simple, transparent pricing. Cancel anytime.')}</div>
           </div>
           <button className="modal-close iconbtn" onClick={onClose} aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -66,21 +68,21 @@ export function SubscriptionModal({ onClose }: SubscriptionModalProps) {
         <div className="pricing-grid">
           {TIERS.map((tier) => (
             <div key={tier.id} className={`pricing-card card${tier.highlight ? ' pricing-card--highlight' : ''}`}>
-              {tier.highlight && <div className="pricing-badge">Most popular</div>}
-              <div className="pricing-tier">{tier.name}</div>
+              {tier.highlight && <div className="pricing-badge">{t('Most popular')}</div>}
+              <div className="pricing-tier">{t(tier.name)}</div>
               <div className="pricing-price">
                 <span className="pricing-amount">{tier.price}</span>
-                {tier.period && <span className="pricing-period">{tier.period}</span>}
+                {tier.period && <span className="pricing-period">{t(tier.period)}</span>}
               </div>
-              <div className="pricing-desc">{tier.desc}</div>
-              <button className={`btn btn--${tier.ctaVariant} pricing-cta`}>{tier.cta}</button>
+              <div className="pricing-desc">{t(tier.desc)}</div>
+              <button className={`btn btn--${tier.ctaVariant} pricing-cta`}>{t(tier.cta)}</button>
               <ul className="pricing-features">
                 {tier.features.map((f) => (
                   <li key={f} className="pricing-feature">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="2,7 5.5,10.5 12,3.5" />
                     </svg>
-                    {f}
+                    {t(f)}
                   </li>
                 ))}
               </ul>

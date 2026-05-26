@@ -164,9 +164,9 @@ function buildClass(
 }
 
 export const CLASSES_TEACHER: Klass[] = [
-  buildClass({ id: 'c-7a', name: 'Grade 7A', subjectId: 'math', grade: 7, room: 'B-204', term: 'Spring 2026' },  7, 28),
-  buildClass({ id: 'c-7b', name: 'Grade 7B', subjectId: 'math', grade: 7, room: 'B-206', term: 'Spring 2026' }, 13, 26),
-  buildClass({ id: 'c-8a', name: 'Grade 8A', subjectId: 'math', grade: 8, room: 'A-112', term: 'Spring 2026' }, 21, 27),
+  buildClass({ id: 'c-7a', name: 'Grade 7A', subjectId: 'math', grade: 7, room: 'B-204', term: 'Spring 2026', teacher: 'Ms. Lee' },  7, 28),
+  buildClass({ id: 'c-7b', name: 'Grade 7B', subjectId: 'math', grade: 7, room: 'B-206', term: 'Spring 2026', teacher: 'Ms. Lee' }, 13, 26),
+  buildClass({ id: 'c-8a', name: 'Grade 8A', subjectId: 'math', grade: 8, room: 'A-112', term: 'Spring 2026', teacher: 'Ms. Lee' }, 21, 27),
 ];
 
 export const CLASSES_ADMIN_EXTRA: Klass[] = [
@@ -177,6 +177,8 @@ export const CLASSES_ADMIN_EXTRA: Klass[] = [
   buildClass({ id: 'c-9a',    name: 'Grade 9A',  subjectId: 'math',    grade: 9, room: 'A-201', term: 'Spring 2026', teacher: 'Mr. Okafor' }, 79, 26),
   buildClass({ id: 'c-9b',    name: 'Grade 9B',  subjectId: 'math',    grade: 9, room: 'A-203', term: 'Spring 2026', teacher: 'Mr. Okafor' }, 89, 23),
 ];
+
+export const CLASSES_ALL: Klass[] = [...CLASSES_TEACHER, ...CLASSES_ADMIN_EXTRA];
 
 function buildSchoolWeekly() {
   const r = mulberry32(101);

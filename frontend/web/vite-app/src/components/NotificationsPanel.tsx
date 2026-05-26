@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { t } from '../lib/i18n';
 
 interface Notif {
   id: string;
@@ -37,18 +38,18 @@ export function NotificationsPanel({ onClose }: Props) {
     <div ref={ref} className="notif-panel card">
       <div className="notif-panel__head">
         <span className="notif-panel__title">
-          Notifications
+          {t('Notifications')}
           {unread > 0 && <span className="notif-panel__badge">{unread}</span>}
         </span>
-        {unread > 0 && <button className="btn btn--text" onClick={markAll}>Mark all read</button>}
+        {unread > 0 && <button className="btn btn--text" onClick={markAll}>{t('Mark all read')}</button>}
       </div>
       <div className="notif-panel__list">
         {items.map((n) => (
           <div key={n.id} className={`notif-item${n.unread ? ' notif-item--unread' : ''}`}>
             <div className={`activity__icon activity__icon--${n.kind}`}>{n.icon}</div>
             <div className="notif-item__body">
-              <div className="notif-item__text">{n.text}</div>
-              <div className="notif-item__when">{n.when}</div>
+              <div className="notif-item__text">{t(n.text)}</div>
+              <div className="notif-item__when">{t(n.when)}</div>
             </div>
             {n.unread && <div className="notif-item__dot" />}
           </div>

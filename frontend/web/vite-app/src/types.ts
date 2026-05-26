@@ -87,7 +87,11 @@ export interface NavState {
     | 'student-detail'
     | 'students'
     | 'mental-health'
-    | 'admin-school';
+    | 'admin-school'
+    | 'join-school'
+    | 'admin-grade'
+    | 'admin-classes'
+    | 'admin-teachers';
   classId?: string;
   studentId?: string;
   focusPointId?: string;

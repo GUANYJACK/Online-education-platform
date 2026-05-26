@@ -1,4 +1,4 @@
-# Lumen — Teacher / School Console (Vite + React + TypeScript)
+# Smart Learn — Teacher / School Console (Vite + React + TypeScript)
 
 Web client for the AI-Agent-Driven Online Education Platform. Implements the
 Teacher and School Admin views from the PRD: dashboard, class detail with

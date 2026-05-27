@@ -224,7 +224,12 @@ export const ZH_TW: Record<string, string> = {
   'Creating account…': '建立中…',
   'Login failed': '登入失敗',
   'Registration failed': '註冊失敗',
+  'Role selection failed': '角色選擇失敗',
   'Min. 8 characters': '至少 8 個字元',
+  'Choose your role': '選擇您的角色',
+  'You can change this later in settings': '您可以稍後在設定中變更',
+  'Manage classes and track student progress': '管理班級並追蹤學生學習進度',
+  'Oversee the entire school and its staff': '統籌管理全校事務與教職人員',
 
   // ── Join school ───────────────────────────────────────────────────────
   'Join your school': '加入學校',

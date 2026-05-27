@@ -26,13 +26,26 @@ export async function apiRegister(
   name: string,
   email: string,
   password: string,
-  role: string,
-): Promise<void> {
+): Promise<{ userId: string }> {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password, role }),
+    body: JSON.stringify({ name, email, password }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Registration failed");
+  return { userId: data.userId };
+}
+
+export async function apiSelectRole(
+  userId: string,
+  role: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/select-role`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, role }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Role selection failed");
 }

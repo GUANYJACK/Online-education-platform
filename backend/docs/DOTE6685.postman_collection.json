@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "5f6f69a2-8c8f-4b1c-a009-5068d8d66a74",
+    "_postman_id": "59930cc8-e94c-48ed-9644-27121053df2c",
     "name": "DOTE6685",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "17680738"
+    "_exporter_id": "17680738",
+    "_collection_link": "https://go.postman.co/collection/17680738-59930cc8-e94c-48ed-9644-27121053df2c?source=collection_link"
   },
   "item": [
     {
@@ -11,6 +12,29 @@
       "item": [
         {
           "name": "1. Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData;",
+                  "try {",
+                  "    jsonData = pm.response.json();",
+                  "} catch (e) {",
+                  "    throw new Error('Response body is not valid JSON');",
+                  "}",
+                  "",
+                  "pm.test('Registration successful and userId saved', function () {",
+                  "    pm.expect(jsonData.userId, 'Expected userId in response').to.be.a('string').and.not.empty;",
+                  "    pm.collectionVariables.set('userId', jsonData.userId);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "noauth"
@@ -19,7 +43,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "  {\r\n    \"name\": \"Joh\",\r\n    \"email\": \"john2@example.com\",\r\n    \"phone\": \"\",\r\n    \"password\": \"password123\",\r\n    \"role\": \"STUDENT\" // Available Roles: STUDENT, PARENT, TEACHER, SCHOOL_ADMIN\r\n  }",
+              "raw": "{\n  \"name\": \"Joh\",\n  \"email\": \"john2@example.com\",\n  \"phone\": \"\",\n  \"password\": \"password123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -35,12 +59,49 @@
                 "auth",
                 "register"
               ]
-            }
+            },
+            "description": "Register a new user. No role is assigned at this step. Use the returned `userId` to call **Select Role** next.\n\nRequired fields: `name`, `email`, `password`\nOptional: `phone`"
           },
           "response": []
         },
         {
-          "name": "2. Login User",
+          "name": "2. Select Role",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"role\": \"STUDENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BaseURL}}/auth/select-role",
+              "host": [
+                "{{BaseURL}}"
+              ],
+              "path": [
+                "auth",
+                "select-role"
+              ]
+            },
+            "description": "Assign a role to a newly registered user. Call this immediately after Register using the `{{userId}}` variable saved by the Register test script.\n\nAvailable roles: `STUDENT`, `PARENT`, `TEACHER`, `SCHOOL_ADMIN`"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Login User",
           "event": [
             {
               "listen": "test",
@@ -87,7 +148,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"parent@family.com\",\n  \"password\": \"password123\"\n}",
+              "raw": "{\n  \"email\": \"admin@school.com\",\n  \"password\": \"password123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -207,8 +268,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "disabled": false
+                "value": "application/json"
               }
             ],
             "body": {
@@ -264,8 +324,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "disabled": false
+                "value": "application/json"
               }
             ],
             "body": {
@@ -302,8 +361,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "disabled": false
+                "value": "application/json"
               }
             ],
             "body": {
@@ -335,8 +393,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "disabled": false
+                "value": "application/json"
               }
             ],
             "body": {
@@ -428,8 +485,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "disabled": false
+                "value": "application/json"
               }
             ],
             "body": {
@@ -490,9 +546,6 @@
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {},
                 "exec": [
                   "let jsonData;",
                   "try {",
@@ -507,11 +560,24 @@
                   "}",
                   "",
                   "pm.collectionVariables.set('chatSessionId', String(sessionId));"
-                ]
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -521,7 +587,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Algebra Help\",\n  \"subject\": \"Mathematics\",\n  \"topic\": \"Quadratic Equations\"\n}",
+              "raw": "{\n  \"title\": \"Grammer Help\",\n  \"subject\": \"English\",\n  \"topic\": \"Past Tense\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -545,6 +611,16 @@
         {
           "name": "2. Get All Student Sessions",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -564,6 +640,16 @@
         {
           "name": "3. Get Session Details",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -584,17 +670,26 @@
         {
           "name": "4. Send Message in Session",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "disabled": false
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"I don't understand fractions.\"\n}",
+              "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"Why 1+1=2\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -761,6 +856,10 @@
     },
     {
       "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
       "value": ""
     },
     {

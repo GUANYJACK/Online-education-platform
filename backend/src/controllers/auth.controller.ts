@@ -9,19 +9,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
     const email = typeof req.body.email === 'string' ? req.body.email.trim() : undefined;
-    const phone = typeof req.body.phone === 'string' ? req.body.phone.trim() : undefined;
+    const phone = typeof req.body.phone === 'string' && req.body.phone.trim() !== '' ? req.body.phone.trim() : undefined;
     const password = typeof req.body.password === 'string' ? req.body.password : '';
-    const role = typeof req.body.role === 'string' ? req.body.role : 'STUDENT';
 
     if (!name || !email || !password) {
-      console.warn('Register validation failed', { name, email, phone, role });
+      console.warn('Register validation failed', { name, email, phone });
       res.status(400).json({ error: 'name, email, and password are required' });
-      return;
-    }
-
-    if (!['STUDENT', 'PARENT', 'TEACHER', 'SCHOOL_ADMIN'].includes(role)) {
-      console.warn('Register validation failed: invalid role', { role });
-      res.status(400).json({ error: 'Invalid role' });
       return;
     }
 
@@ -48,12 +41,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         name,
         email,
         phone,
-        password: hashedPassword,
-        role
+        password: hashedPassword
       }
     });
 
-    console.log('Register success', { userId: user.id, email, phone, role });
+    console.log('Register success', { userId: user.id, email, phone });
     res.status(201).json({ message: 'User registered successfully', userId: user.id });
   } catch (error) {
     const prismaError = error as {
@@ -129,5 +121,41 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       stack: authError.stack || undefined,
       meta: authError.meta || undefined
     });
+  }
+};
+
+const VALID_ROLES = ['STUDENT', 'PARENT', 'TEACHER', 'SCHOOL_ADMIN'] as const;
+
+export const selectRole = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = typeof req.body.userId === 'string' ? req.body.userId.trim() : '';
+    const role = typeof req.body.role === 'string' ? req.body.role.trim() : '';
+
+    if (!userId || !role) {
+      res.status(400).json({ error: 'userId and role are required' });
+      return;
+    }
+
+    if (!VALID_ROLES.includes(role as typeof VALID_ROLES[number])) {
+      res.status(400).json({ error: `role must be one of: ${VALID_ROLES.join(', ')}` });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { role: role as typeof VALID_ROLES[number] }
+    });
+
+    console.log('Role selected', { userId, role });
+    res.json({ message: 'Role updated successfully', userId, role });
+  } catch (error) {
+    console.error('selectRole error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

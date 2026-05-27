@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    role: string;
+    role: string | null;
   };
 }
 
@@ -33,7 +33,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
 export const authorizeRole = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || !req.user.role || !roles.includes(req.user.role)) {
       res.status(403).json({ error: 'Forbidden' });
       return;
     }

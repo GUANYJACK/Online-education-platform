@@ -29,11 +29,11 @@ function ChapterPage() {
     });
   };
 
-  const chapterName = (ch: { id: string; name: string }) => ch.name;
+  const chapterName = (ch: { id: string; name: string }) => t(ch.name);
 
-  const kpName = (p: { id: string; name: string }) => p.name;
+  const kpName = (p: { id: string; name: string }) => t(p.name);
 
-  const kpDesc = (p: { id: string; desc: string }) => p.desc;
+  const kpDesc = (p: { id: string; desc: string }) => t(p.desc);
 
   return (
     <MobileShell title={chapterName(c)} back>

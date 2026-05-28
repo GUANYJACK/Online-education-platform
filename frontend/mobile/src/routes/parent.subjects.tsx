@@ -35,7 +35,7 @@ function ParentSubjects() {
                   {s.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold">{s.name}</h3>
+                  <h3 className="font-bold">{t(s.name)}</h3>
                   <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground/60">
                     <BookOpen className="h-3 w-3" />
                     <span>{t("ps.points", { n: total })}</span>

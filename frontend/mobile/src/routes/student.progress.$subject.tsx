@@ -33,10 +33,10 @@ function SubjectProgressPage() {
   const weakCount = totalPoints - masteredCount - partialCount;
   const masteryRate = totalPoints > 0 ? Math.round((masteredCount / totalPoints) * 100) : 0;
 
-  const chapterName = (ch: { id: string; name: string }) => ch.name;
+  const chapterName = (ch: { id: string; name: string }) => t(ch.name);
 
   return (
-    <MobileShell title={t("progress.subject.title", { s: s.name })} back>
+    <MobileShell title={t("progress.subject.title", { s: t(s.name) })} back>
       {/* Subject header card */}
       <div className="mb-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="flex items-center gap-3">
@@ -44,7 +44,7 @@ function SubjectProgressPage() {
             {s.emoji}
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold">{s.name}</h2>
+            <h2 className="text-lg font-bold">{t(s.name)}</h2>
             <p className="text-xs text-muted-foreground">
               {t("progress.subject.chapters", { n: s.chapters.length })} · {t("progress.subject.points", { n: totalPoints })}
             </p>
@@ -113,7 +113,7 @@ function SubjectProgressPage() {
               </div>
               <div className="border-t border-border bg-muted/30 p-3 space-y-1.5">
                 {c.points.map((p) => {
-                  const name = p.name;
+                  const name = t(p.name);
                   return (
                     <Link
                       key={p.id}

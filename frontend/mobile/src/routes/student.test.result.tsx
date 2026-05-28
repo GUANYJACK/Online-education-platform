@@ -43,7 +43,7 @@ function ResultPage() {
       <div className="space-y-2">
         {changes.map((p) => (
           <div key={p.name} className="flex items-center justify-between rounded-2xl border border-border/50 bg-card p-3.5 shadow-sm">
-            <span className="text-sm font-medium">{p.name}</span>
+            <span className="text-sm font-medium">{t(p.name)}</span>
             <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
               <span>{t(`mastery.${p.from}`)}</span>
               <ArrowRight className="h-3 w-3" />

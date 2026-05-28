@@ -38,10 +38,10 @@ function ProgressPage() {
         desc: p.desc,
         mastery: p.mastery,
         subjectId: s.id,
-        subjectName: s.name,
+        subjectName: t(s.name),
         subjectEmoji: s.emoji,
         chapterId: c.id,
-        chapterName: c.name,
+        chapterName: t(c.name),
       })),
     ),
   );
@@ -103,7 +103,7 @@ function ProgressPage() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">{p.name}</span>
+                          <span className="text-sm font-medium truncate">{t(p.name)}</span>
                           <MasteryBadge level={p.mastery} />
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground/60 truncate">

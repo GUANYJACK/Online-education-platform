@@ -44,7 +44,7 @@ function AIChat() {
       subjects.flatMap((s) =>
         s.chapters.flatMap((c) =>
           c.points.map((p) => ({
-            name: p.name,
+            name: t(p.name),
             subject: s.id,
             chapter: c.id,
           })),
@@ -61,10 +61,10 @@ function AIChat() {
     if (!point) return null;
     return {
       id: point.id,
-      name: point.name,
-      desc: point.desc,
-      subjectName: subj!.name,
-      chapterName: chap!.name,
+      name: t(point.name),
+      desc: t(point.desc),
+      subjectName: t(subj!.name),
+      chapterName: t(chap!.name),
     };
   }, [kp, urlSubject, urlChapter, t, subjects]);
 

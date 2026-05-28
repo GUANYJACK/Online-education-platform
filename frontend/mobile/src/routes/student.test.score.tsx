@@ -27,7 +27,7 @@ function ScoreEntry() {
     if (isNaN(num) || num < 0 || num > 100) { setError(t("test.score.error.range")); return; }
     setError("");
     const subjectName = subjectList.find((s) => s.id === subject)?.name || subject;
-    alert(t("test.score.toast", { s: subjectName, e: exam || t("test.score.examDefault"), n: Math.round(num) }));
+    alert(t("test.score.toast", { s: t(subjectName), e: exam || t("test.score.examDefault"), n: Math.round(num) }));
     navigate({ to: "/student/test" });
   };
 
@@ -42,7 +42,7 @@ function ScoreEntry() {
             className="mt-1.5 w-full rounded-2xl border border-border/80 bg-card px-4 py-3.5 text-sm outline-none transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/10"
           >
             {subjectList.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
+              <option key={s.id} value={s.id}>{t(s.name)}</option>
             ))}
           </select>
         </div>

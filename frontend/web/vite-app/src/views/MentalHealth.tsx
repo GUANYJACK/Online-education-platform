@@ -5,6 +5,7 @@ import type { Klass, NavState } from '../types';
 import { STRESS_KEYWORDS } from '../lib/data';
 import { classAvgSentiment, classRiskDist } from '../lib/mastery';
 import { classDisplayName, t } from '../lib/i18n';
+import { showToast } from '../lib/toast';
 import { classNames, lastActiveStr } from '../lib/format';
 import {
   Avatar,
@@ -177,7 +178,7 @@ export function ViewMentalHealth({ classes, onNavigate }: ViewMentalHealthProps)
           <p className="view__sub">{t('Class-level aggregates · raw conversation data is never shown')}</p>
         </div>
         <div className="view__actions">
-          <button className="btn btn--ghost"><Icon name="download" size={14} /> {t('Export aggregate')}</button>
+          <button className="btn btn--ghost" onClick={() => showToast(t('Coming soon'))}><Icon name="download" size={14} /> {t('Export aggregate')}</button>
         </div>
       </div>
 

@@ -101,7 +101,7 @@ export const unbindChild = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
     const parentId = req.user.id;
-    const { childId } = req.params;
+    const childId = req.params.childId as string;
 
     const relation = await prisma.userParent.findUnique({
       where: { parentId_childId: { parentId, childId } }

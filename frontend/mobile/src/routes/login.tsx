@@ -61,7 +61,7 @@ function LoginPage() {
         navigate({ to: "/onboarding" });
       } else {
         const res = await apiLogin(account, code);
-        const role = res.user.role.toLowerCase() === "parent" ? "parent" : "student";
+        const role = res.user.role?.toLowerCase() === "parent" ? "parent" : "student";
         setLogin(account, res.user.name, "dse", res.token, res.user.id);
         useAppStore.getState().setRole(role);
         useAppStore.getState().setOnboarded();

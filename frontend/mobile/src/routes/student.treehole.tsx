@@ -2,6 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { studentTabs } from "@/components/mobile/student-tabs";
+import { apiTreehole } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/student/treehole")({
@@ -19,6 +20,7 @@ function TreeHole() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [started, setStarted] = useState(false);
+  const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -33,7 +35,7 @@ function TreeHole() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, sending]);
 
   const addGreeting = () => {
     if (started) return;
@@ -43,24 +45,43 @@ function TreeHole() {
     ]);
   };
 
-  const send = () => {
-    if (!input.trim()) return;
+  const send = async () => {
+    if (!input.trim() || sending) return;
     if (!started) addGreeting();
     const text = input.trim();
     setInput("");
     const now = Date.now();
     setMessages((m) => [...m, { role: "user", text, time: now }]);
-    const replies = [t("tree.reply1"), t("tree.reply2"), t("tree.reply3")];
-    setTimeout(() => {
+    setSending(true);
+
+    try {
+      // Build conversation history for context (last 10 messages)
+      const history = messages
+        .filter((m) => m.role === "user" || m.role === "tree")
+        .slice(-10)
+        .map((m) => ({
+          role: m.role === "user" ? "user" as const : "ai" as const,
+          text: m.text,
+        }));
+
+      const res = await apiTreehole({ message: text, history });
+      setMessages((m) => [
+        ...m,
+        { role: "tree", text: res.response, time: Date.now() },
+      ]);
+    } catch {
+      // Fallback on error
       setMessages((m) => [
         ...m,
         {
           role: "tree",
-          text: replies[Math.floor(Math.random() * 3)],
+          text: "嗯，我在听。风会把烦恼带走的，慢慢来。🌿",
           time: Date.now(),
         },
       ]);
-    }, 600 + Math.random() * 400);
+    } finally {
+      setSending(false);
+    }
   };
 
   const formatTime = (ts: number) => {
@@ -175,6 +196,22 @@ function TreeHole() {
             )}
           </div>
         ))}
+
+        {/* Typing indicator */}
+        {sending && (
+          <div className="flex justify-start">
+            <div className="max-w-[82%]">
+              <div className="rounded-2xl rounded-tl-md border border-mastered/10 bg-card px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:0ms]" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:150ms]" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:300ms]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div ref={endRef} />
       </div>
 
@@ -188,26 +225,34 @@ function TreeHole() {
             onFocus={addGreeting}
             placeholder={t("tree.placeholder")}
             rows={1}
-            className="ui-sans max-h-24 min-h-[36px] flex-1 resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/30"
+            disabled={sending}
+            className="ui-sans max-h-24 min-h-[36px] flex-1 resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/30 disabled:opacity-50"
           />
           <button
             onClick={send}
-            disabled={!input.trim()}
+            disabled={!input.trim() || sending}
             className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/15 transition-all active:scale-90 disabled:opacity-30 disabled:shadow-none"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M22 2L11 13" />
-              <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-            </svg>
+            {sending ? (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 2L11 13" />
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+              </svg>
+            )}
           </button>
         </div>
       </div>

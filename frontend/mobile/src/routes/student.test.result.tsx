@@ -22,9 +22,9 @@ function ResultPage() {
         : { bg: "bg-gradient-to-br from-weak-soft to-weak-soft/60", text: "text-weak", ring: "ring-weak/20" };
 
   const changes = [
-    { pid: "quad", from: "partial", to: "mastered", up: true },
-    { pid: "linear", from: "mastered", to: "mastered", up: false },
-    { pid: "expo", from: "weak", to: "partial", up: true },
+    { name: "二次方程", from: "partial", to: "mastered", up: true },
+    { name: "一次函数", from: "mastered", to: "mastered", up: false },
+    { name: "指数函数", from: "weak", to: "partial", up: true },
   ];
 
   return (
@@ -42,8 +42,8 @@ function ResultPage() {
       <h3 className="mb-2.5 mt-6 text-sm font-bold">{t("test.result.changes")}</h3>
       <div className="space-y-2">
         {changes.map((p) => (
-          <div key={p.pid} className="flex items-center justify-between rounded-2xl border border-border/50 bg-card p-3.5 shadow-sm">
-            <span className="text-sm font-medium">{t(`kp.${p.pid}.n`)}</span>
+          <div key={p.name} className="flex items-center justify-between rounded-2xl border border-border/50 bg-card p-3.5 shadow-sm">
+            <span className="text-sm font-medium">{p.name}</span>
             <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
               <span>{t(`mastery.${p.from}`)}</span>
               <ArrowRight className="h-3 w-3" />

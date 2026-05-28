@@ -9,8 +9,10 @@ export interface AiSession {
   id: string;
   title: string;
   mode: "guided" | "free";
+  subject?: string | null;
+  topic?: string | null;
   createdAt: number;
-  messages: { role: "user" | "ai"; text: string; blocked?: boolean }[];
+  updatedAt?: number;
 }
 
 interface AppState {
@@ -48,6 +50,7 @@ interface AppState {
   setSchool: (s: string) => void;
   saveSession: (s: AiSession) => void;
   removeSession: (id: string) => void;
+  clearSessions: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -92,6 +95,7 @@ export const useAppStore = create<AppState>()(
         })),
       removeSession: (id) =>
         set((st) => ({ aiSessions: st.aiSessions.filter((x) => x.id !== id) })),
+      clearSessions: () => set({ aiSessions: [] }),
     }),
     { name: "edu-app-state" },
   ),

@@ -23,12 +23,6 @@ export interface Subject {
   chapters: Chapter[];
 }
 
-const EMOJIS: Record<string, string> = {
-  chinese: "📖",
-  english: "🌍",
-  math: "📐",
-};
-
 function mapMastery(m: ApiMastery): Mastery {
   if (m === "MASTERED") return "mastered";
   if (m === "PARTIAL") return "partial";
@@ -52,7 +46,7 @@ function buildCurriculum(progressItems: ApiProgressItem[]): Subject[] {
       subjectMap.set(subject.id, {
         id: subject.id,
         name: subject.name,
-        emoji: EMOJIS[subject.id] || "📚",
+        emoji: subject.emoji || "📚",
         chapters: [],
       });
     }
@@ -68,7 +62,7 @@ function buildCurriculum(progressItems: ApiProgressItem[]): Subject[] {
       chap.points.push({
         id: knowledgePoint.id,
         name: knowledgePoint.name,
-        desc: knowledgePoint.desc,
+        desc: knowledgePoint.desc || "",
         mastery: mapMastery(item.mastery),
       });
     }

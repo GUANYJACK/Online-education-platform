@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { MobileShell } from "@/components/mobile/MobileShell";
+import { subjects as mockSubjects } from "@/lib/mock-data";
+import { useCurriculum } from "@/lib/useCurriculum";
 import { useT } from "@/lib/i18n";
+import { useAppStore } from "@/lib/store";
 
 export const Route = createFileRoute("/student/test/score")({
   component: ScoreEntry,
@@ -9,8 +12,10 @@ export const Route = createFileRoute("/student/test/score")({
 
 function ScoreEntry() {
   const t = useT();
-  const subjectIds = ["math", "chinese", "english"] as const;
-  const [subject, setSubject] = useState<string>("math");
+  const userId = useAppStore((s) => s.userId);
+  const { data: apiSubjects } = useCurriculum(userId);
+  const subjectList = (apiSubjects && apiSubjects.length > 0) ? apiSubjects : mockSubjects;
+  const [subject, setSubject] = useState<string>(subjectList[0]?.id || "math");
   const [score, setScore] = useState("");
   const [exam, setExam] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +26,8 @@ function ScoreEntry() {
     const num = Number(score);
     if (isNaN(num) || num < 0 || num > 100) { setError(t("test.score.error.range")); return; }
     setError("");
-    alert(t("test.score.toast", { s: t(`subj.${subject}`), e: exam || t("test.score.examDefault"), n: Math.round(num) }));
+    const subjectName = subjectList.find((s) => s.id === subject)?.name || subject;
+    alert(t("test.score.toast", { s: subjectName, e: exam || t("test.score.examDefault"), n: Math.round(num) }));
     navigate({ to: "/student/test" });
   };
 
@@ -35,8 +41,8 @@ function ScoreEntry() {
             onChange={(e) => setSubject(e.target.value)}
             className="mt-1.5 w-full rounded-2xl border border-border/80 bg-card px-4 py-3.5 text-sm outline-none transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/10"
           >
-            {subjectIds.map((id) => (
-              <option key={id} value={id}>{t(`subj.${id}`)}</option>
+            {subjectList.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         </div>

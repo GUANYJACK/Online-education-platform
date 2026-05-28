@@ -34,14 +34,14 @@ function ProgressPage() {
     s.chapters.flatMap((c) =>
       c.points.map((p) => ({
         id: p.id,
-        name: t(`kp.${p.id}.n`),
-        desc: t(`kp.${p.id}.d`),
+        name: p.name,
+        desc: p.desc,
         mastery: p.mastery,
         subjectId: s.id,
-        subjectName: t(`subj.${s.id}`),
+        subjectName: s.name,
         subjectEmoji: s.emoji,
         chapterId: c.id,
-        chapterName: t(`ch.${s.id}.${c.id}`),
+        chapterName: c.name,
       })),
     ),
   );

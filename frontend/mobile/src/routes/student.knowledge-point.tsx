@@ -33,10 +33,10 @@ function KnowledgePointPage() {
 
   if (!point || !subj || !chap) throw notFound();
 
-  const pointName = t(`kp.${point.id}.n`);
-  const pointDesc = t(`kp.${point.id}.d`);
-  const subjectName = t(`subj.${subj.id}`);
-  const chapterName = t(`ch.${subj.id}.${chap.id}`);
+  const pointName = point.name;
+  const pointDesc = point.desc;
+  const subjectName = subj.name;
+  const chapterName = chap.name;
 
   const startAiGuide = () => {
     navigate({

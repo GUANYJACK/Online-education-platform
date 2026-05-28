@@ -29,28 +29,16 @@ function ChapterPage() {
     });
   };
 
-  const chapterName = (ch: { id: string; name: string }) => {
-    const key = `ch.${s.id}.${ch.id}`;
-    const translated = t(key);
-    return translated === key ? ch.name : translated;
-  };
+  const chapterName = (ch: { id: string; name: string }) => ch.name;
 
-  const kpName = (p: { id: string; name: string }) => {
-    const key = `kp.${p.id}.n`;
-    const translated = t(key);
-    return translated === key ? p.name : translated;
-  };
+  const kpName = (p: { id: string; name: string }) => p.name;
 
-  const kpDesc = (p: { id: string; desc: string }) => {
-    const key = `kp.${p.id}.d`;
-    const translated = t(key);
-    return translated === key ? p.desc : translated;
-  };
+  const kpDesc = (p: { id: string; desc: string }) => p.desc;
 
   return (
     <MobileShell title={chapterName(c)} back>
       <p className="mb-4 text-xs text-muted-foreground/60">
-        {t("learn.subjectDot", { s: t(`subj.${s.id}`), n: c.points.length })}
+        {t("learn.subjectDot", { s: t(s.name), n: c.points.length })}
       </p>
       <div className="space-y-2.5 stagger-children">
         {c.points.map((p) => (

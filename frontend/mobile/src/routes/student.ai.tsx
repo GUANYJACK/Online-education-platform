@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { useState, useRef, useEffect, Fragment, useMemo } from "react";
+import { useState, useRef, useEffect, Fragment, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { studentTabs } from "@/components/mobile/student-tabs";
 import { subjects as mockSubjects } from "@/lib/mock-data";
 import { useCurriculum } from "@/lib/useCurriculum";
-import { apiChat } from "@/lib/api";
+import { apiChat, apiCreateChatSession, apiGetChatSessions, apiGetChatSession, apiDeleteChatSession } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
 import { Send, Mic, Sparkles, MessageSquare, ShieldAlert, History, Plus, X, Trash2 } from "lucide-react";
@@ -28,10 +28,11 @@ function AIChat() {
   const { kp, subject: urlSubject, chapter: urlChapter } = Route.useSearch();
   const [mode, setMode] = useState<"free" | "guided">("guided");
   const [input, setInput] = useState("");
-  const [sessionId, setSessionId] = useState(() => `s_${Date.now()}`);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [sending, setSending] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 
@@ -43,7 +44,7 @@ function AIChat() {
       subjects.flatMap((s) =>
         s.chapters.flatMap((c) =>
           c.points.map((p) => ({
-            name: t(`kp.${p.id}.n`),
+            name: p.name,
             subject: s.id,
             chapter: c.id,
           })),
@@ -60,10 +61,10 @@ function AIChat() {
     if (!point) return null;
     return {
       id: point.id,
-      name: t(`kp.${point.id}.n`),
-      desc: t(`kp.${point.id}.d`),
-      subjectName: t(`subj.${subj!.id}`),
-      chapterName: t(`ch.${subj!.id}.${chap!.id}`),
+      name: point.name,
+      desc: point.desc,
+      subjectName: subj!.name,
+      chapterName: chap!.name,
     };
   }, [kp, urlSubject, urlChapter, t, subjects]);
 
@@ -80,34 +81,94 @@ function AIChat() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, sending]);
 
-  useEffect(() => {
-    const userMsgs = messages.filter((m) => m.role === "user");
-    if (userMsgs.length === 0) return;
-    saveSession({ id: sessionId, title: userMsgs[0].text.slice(0, 20), mode, createdAt: Date.now(), messages });
-  }, [messages, sessionId, mode, saveSession]);
+  // ── Fetch session list from backend when history drawer opens ──
+  const refreshSessions = useCallback(async () => {
+    try {
+      const res = await apiGetChatSessions();
+      // Replace local cache with backend data
+      useAppStore.setState({ aiSessions: [] });
+      res.sessions.forEach((s: any) => {
+        saveSession({
+          id: s.sessionId,
+          title: s.title,
+          mode: "guided",
+          subject: s.subject,
+          topic: s.topic,
+          createdAt: new Date(s.createdAt).getTime(),
+          updatedAt: new Date(s.updatedAt).getTime(),
+        });
+      });
+    } catch {
+      // Backend unavailable — keep local cache
+    }
+  }, [saveSession]);
 
   const switchMode = (m: "free" | "guided") => {
     if (m === mode) return;
     setMode(m);
     setMessages([{ role: "ai", text: t(m === "guided" ? "ai.greet.guided" : "ai.greet.free") }]);
-    setSessionId(`s_${Date.now()}`);
+    setSessionId(null);
   };
 
-  const newChat = () => {
+  const newChat = async () => {
     setMessages([{ role: "ai", text: t(mode === "guided" ? "ai.greet.guided" : "ai.greet.free") }]);
-    setSessionId(`s_${Date.now()}`);
+    try {
+      const subject = kpInfo?.subjectName || undefined;
+      const topic = kpInfo?.name || undefined;
+      const res = await apiCreateChatSession({
+        title: mode === "guided" ? (kpInfo?.name || "Guided Learning") : "Free Chat",
+        subject,
+        topic,
+      });
+      setSessionId(res.session.sessionId);
+      // Save to local cache for immediate display in history
+      saveSession({
+        id: res.session.sessionId,
+        title: res.session.title,
+        mode,
+        subject: res.session.subject,
+        topic: res.session.topic,
+        createdAt: Date.now(),
+      });
+    } catch {
+      setSessionId(null);
+    }
     setHistoryOpen(false);
   };
 
-  const loadSession = (sid: string) => {
-    const s = aiSessions.find((x) => x.id === sid);
-    if (!s) return;
-    setMessages(s.messages);
-    setMode(s.mode);
-    setSessionId(s.id);
+  const loadSession = async (sid: string) => {
+    setLoadingSession(true);
     setHistoryOpen(false);
+    try {
+      const res = await apiGetChatSession(sid);
+      // Convert backend ChatHistory[] to local Msg[]
+      const history: Msg[] = res.session.chatHistories.map((h: any) => ({
+        role: h.sender === "USER" ? "user" : "ai",
+        text: h.message,
+      }));
+      setMessages(history.length > 0 ? history : [{ role: "ai", text: t("ai.greet.guided") }]);
+      setSessionId(sid);
+    } catch {
+      // Fallback to local if available
+      const s = aiSessions.find((x) => x.id === sid);
+      if (s) {
+        setMessages([{ role: "ai", text: t("ai.greet.guided") }]);
+        setSessionId(s.id);
+      }
+    } finally {
+      setLoadingSession(false);
+    }
+  };
+
+  const deleteSession = async (sid: string) => {
+    removeSession(sid);
+    try {
+      await apiDeleteChatSession(sid);
+    } catch {
+      // Ignore delete errors
+    }
   };
 
   const send = async () => {
@@ -117,12 +178,37 @@ function AIChat() {
     setMessages((m) => [...m, { role: "user", text }]);
     setSending(true);
     try {
-      const res = await apiChat({
-        studentId: userId || "unknown",
-        message: text,
-        context: kpInfo ? { kp: kpInfo.name, subject: kpInfo.subjectName, chapter: kpInfo.chapterName } : {},
-      });
-      setMessages((m) => [...m, { role: "ai", text: res.response }]);
+      let currentSessionId = sessionId;
+      if (!currentSessionId) {
+        try {
+          const subject = kpInfo?.subjectName || undefined;
+          const topic = kpInfo?.name || undefined;
+          const res = await apiCreateChatSession({
+            title: mode === "guided" ? (kpInfo?.name || "Guided Learning") : "Free Chat",
+            subject,
+            topic,
+          });
+          currentSessionId = res.session.sessionId;
+          setSessionId(currentSessionId);
+          saveSession({
+            id: currentSessionId,
+            title: res.session.title,
+            mode,
+            subject: res.session.subject,
+            topic: res.session.topic,
+            createdAt: Date.now(),
+          });
+        } catch {
+          // Backend unavailable
+        }
+      }
+
+      if (currentSessionId) {
+        const res = await apiChat({ sessionId: currentSessionId, message: text });
+        setMessages((m) => [...m, { role: "ai", text: res.response }]);
+      } else {
+        throw new Error("No session available");
+      }
     } catch (err: any) {
       const errorMsg = err?.message || t("ai.error.unknown");
       setMessages((m) => [...m, { role: "ai", text: t("ai.error.prefix") + errorMsg, blocked: true }]);
@@ -206,10 +292,10 @@ function AIChat() {
                     <button onClick={() => loadSession(s.id)} className="flex-1 text-left">
                       <p className="line-clamp-1 text-xs font-medium">{s.title}</p>
                       <p className="mt-0.5 text-[10px] text-muted-foreground/50">
-                        {t(`ai.mode.${s.mode}`)} · {new Date(s.createdAt).toLocaleString()}
+                        {s.topic ? `${s.topic} · ` : ""}{s.subject || t(`ai.mode.${s.mode}`)} · {new Date(s.createdAt).toLocaleString()}
                       </p>
                     </button>
-                    <button onClick={() => removeSession(s.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors">
+                    <button onClick={() => deleteSession(s.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </li>
@@ -222,7 +308,7 @@ function AIChat() {
       </div>,
       document.body,
     );
-  }, [historyOpen, aiSessions, sessionId, mode, t, newChat, loadSession, removeSession]);
+  }, [historyOpen, aiSessions, sessionId, mode, t, newChat, loadSession]);
 
   return (
     <>
@@ -235,7 +321,7 @@ function AIChat() {
             <button onClick={newChat} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/70 transition-all hover:bg-muted active:scale-90" aria-label="new">
               <Plus className="h-4 w-4" />
             </button>
-            <button onClick={() => setHistoryOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/70 transition-all hover:bg-muted active:scale-90" aria-label="history">
+            <button onClick={() => { setHistoryOpen(true); refreshSessions(); }} className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/70 transition-all hover:bg-muted active:scale-90" aria-label="history">
               <History className="h-4 w-4" />
             </button>
           </div>
@@ -284,6 +370,28 @@ function AIChat() {
                 </div>
               </div>
             ))}
+            {loadingSession && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl rounded-bl-md border border-border/40 bg-card px-5 py-3 shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:0ms]" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:150ms]" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              </div>
+            )}
+            {sending && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl rounded-bl-md border border-border/40 bg-card px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:0ms]" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:150ms]" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
           </div>
         </div>
@@ -291,19 +399,26 @@ function AIChat() {
         {/* Input bar */}
         <div className="fixed bottom-[68px] left-1/2 z-10 w-full max-w-[430px] -translate-x-1/2 border-t border-border/40 bg-background/92 px-3 py-2.5 backdrop-blur-xl">
           <div className="flex items-center gap-2">
-            <button onClick={tryVoice} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-muted-foreground/60 transition-all hover:bg-muted active:scale-90">
+            <button onClick={tryVoice} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted/60 text-muted-foreground/60 transition-all hover:bg-muted active:scale-90" disabled={sending}>
               <Mic className="h-4 w-4" />
             </button>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder={t("ai.placeholder")}
-              disabled={sending}
-              className="flex-1 rounded-full border border-border/60 bg-muted/40 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary/40 focus:bg-background"
+              placeholder={sending ? t("ai.thinking") : t("ai.placeholder")}
+              disabled={sending || loadingSession}
+              className="flex-1 rounded-full border border-border/60 bg-muted/40 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary/40 focus:bg-background disabled:opacity-60"
             />
-            <button onClick={send} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all active:scale-90">
-              <Send className="h-4 w-4" />
+            <button onClick={send} disabled={sending || loadingSession} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all active:scale-90 disabled:opacity-70 disabled:shadow-none">
+              {sending ? (
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>

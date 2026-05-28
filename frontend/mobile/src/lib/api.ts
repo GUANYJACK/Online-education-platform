@@ -1,6 +1,6 @@
 import { useAppStore } from "./store";
 
-const API_BASE = "https://online-education-platform-backend-kappa.vercel.app/api";
+const API_BASE = "https://online-education-platform-backend-kappa.vercel.app/api/";
 
 function getToken(): string | null {
   return useAppStore.getState().token;
@@ -25,13 +25,12 @@ async function request<T>(path: string, opts?: RequestInit): Promise<T> {
   return res.json();
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────
+// Auth
 
 export async function apiLogin(
   credential: string,
   password: string,
 ): Promise<{ token: string; user: { id: string; name: string; role: string } }> {
-  // Try email first, then phone
   const body = credential.includes("@")
     ? { email: credential, password }
     : { phone: credential, password };
@@ -58,7 +57,7 @@ export async function apiGetProfile(): Promise<{
   return request("/users/profile");
 }
 
-// ── Progress ──────────────────────────────────────────────────────────
+// Progress
 
 export type ApiMastery = "UNMASTERED" | "PARTIAL" | "MASTERED";
 
@@ -77,6 +76,7 @@ export interface ApiProgressItem {
       subject: {
         id: string;
         name: string;
+        emoji: string;
       };
     };
   };
@@ -95,25 +95,49 @@ export async function apiUpdateProgress(body: {
   return request("/progress/update", { method: "POST", body: JSON.stringify(body) });
 }
 
-// ── AI ────────────────────────────────────────────────────────────────
+// AI Chat (session-based)
+
+export async function apiCreateChatSession(body: {
+  title?: string;
+  subject?: string;
+  topic?: string;
+}): Promise<{ session: { sessionId: string; title: string; subject: string | null; topic: string | null } }> {
+  return request("/ai/sessions", { method: "POST", body: JSON.stringify(body) });
+}
+
+export async function apiGetChatSessions(): Promise<{ sessions: any[] }> {
+  return request("/ai/sessions");
+}
+
+export async function apiGetChatSession(sessionId: string): Promise<{ session: any }> {
+  return request(`/ai/sessions/${sessionId}`);
+}
+
+export async function apiDeleteChatSession(sessionId: string): Promise<{ message: string }> {
+  return request(`/ai/sessions/${sessionId}`, { method: "DELETE" });
+}
 
 export async function apiChat(body: {
-  studentId: string;
+  sessionId: string;
   message: string;
-  context?: Record<string, unknown>;
-}): Promise<{ response: string; modelUsed: string }> {
+}): Promise<{ response: string; modelUsed: string; sessionId: string }> {
   return request("/ai/chat", { method: "POST", body: JSON.stringify(body) });
 }
 
-export async function apiCheckMentalHealth(studentId: string): Promise<{
+export async function apiCheckMentalHealth(): Promise<{
   emotionPolarity: string;
   riskLevel: string;
   keywords: string[];
 }> {
-  return request("/ai/mental-health", {
-    method: "POST",
-    body: JSON.stringify({ studentId }),
-  });
+  return request("/ai/mental-health", { method: "POST", body: JSON.stringify({}) });
+}
+
+// Treehole chat
+export async function apiTreehole(body: {
+  message: string;
+  history?: Array<{ role: "user" | "ai"; text: string }>;
+}): Promise<{ response: string }> {
+  return request("/ai/treehole", { method: "POST", body: JSON.stringify(body) });
 }
 
 export async function apiGetStudentUuidByEmail(email: string): Promise<{ id: string } | null> {

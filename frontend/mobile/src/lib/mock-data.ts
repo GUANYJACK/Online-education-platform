@@ -15,105 +15,101 @@ export interface Subject {
   id: string;
   name: string;
   emoji: string;
-  color: string; // CSS var name segment
   chapters: Chapter[];
 }
 
 export const subjects: Subject[] = [
   {
     id: "chinese",
-    name: "中國語文",
+    name: "subj.chinese",
     emoji: "📖",
-    color: "weak",
     chapters: [
       {
         id: "reading",
-        name: "閱讀理解",
+        name: "ch.chinese.reading",
         points: [
-          { id: "prose", name: "白話文閱讀", desc: "敘事、抒情、議論文理解", mastery: "mastered" },
-          { id: "classical", name: "文言文閱讀", desc: "文言篇章理解與翻譯", mastery: "partial" },
+          { id: "prose", name: "kp.prose.n", desc: "kp.prose.d", mastery: "mastered" },
+          { id: "classical", name: "kp.classical.n", desc: "kp.classical.d", mastery: "partial" },
         ],
       },
       {
         id: "writing",
-        name: "寫作",
+        name: "ch.chinese.writing",
         points: [
-          { id: "narrative", name: "記敘文寫作", desc: "立意、選材、結構佈局", mastery: "partial" },
-          { id: "argumentative", name: "議論文寫作", desc: "論點、論證、論據組織", mastery: "weak" },
+          { id: "narrative", name: "kp.narrative.n", desc: "kp.narrative.d", mastery: "partial" },
+          { id: "argumentative", name: "kp.argumentative.n", desc: "kp.argumentative.d", mastery: "weak" },
         ],
       },
       {
         id: "oral",
-        name: "聆聽與綜合",
+        name: "ch.chinese.oral",
         points: [
-          { id: "listening", name: "聆聽理解", desc: "錄音內容理解與歸納", mastery: "mastered" },
-          { id: "integrated", name: "綜合能力", desc: "資料整合與表達", mastery: "partial" },
+          { id: "listening", name: "kp.listening.n", desc: "kp.listening.d", mastery: "mastered" },
+          { id: "integrated", name: "kp.integrated.n", desc: "kp.integrated.d", mastery: "partial" },
         ],
       },
     ],
   },
   {
     id: "english",
-    name: "英國語文",
+    name: "subj.english",
     emoji: "🌍",
-    color: "mastered",
     chapters: [
       {
         id: "reading",
-        name: "Reading",
+        name: "ch.english.reading",
         points: [
-          { id: "comprehension", name: "Reading Comprehension", desc: "Understanding and analysing texts", mastery: "partial" },
-          { id: "vocabulary", name: "Vocabulary in Context", desc: "Word meaning and usage", mastery: "mastered" },
+          { id: "comprehension", name: "kp.comprehension.n", desc: "kp.comprehension.d", mastery: "partial" },
+          { id: "vocabulary", name: "kp.vocabulary.n", desc: "kp.vocabulary.d", mastery: "mastered" },
         ],
       },
       {
         id: "writing",
-        name: "Writing",
+        name: "ch.english.writing",
         points: [
-          { id: "part1", name: "Part 1 – Short Task", desc: "200-word guided writing", mastery: "mastered" },
-          { id: "part2", name: "Part 2 – Extended Task", desc: "400-word free writing", mastery: "partial" },
+          { id: "part1", name: "kp.part1.n", desc: "kp.part1.d", mastery: "mastered" },
+          { id: "part2", name: "kp.part2.n", desc: "kp.part2.d", mastery: "partial" },
         ],
       },
       {
         id: "listening",
-        name: "Listening & Integrated",
+        name: "ch.english.listening",
         points: [
-          { id: "dictation", name: "Dictation", desc: "Listening accuracy and spelling", mastery: "weak" },
-          { id: "integrated", name: "Integrated Tasks", desc: "Note-taking and writing", mastery: "partial" },
+          { id: "dictation", name: "kp.dictation.n", desc: "kp.dictation.d", mastery: "weak" },
+          { id: "integrated", name: "kp.integrated.n", desc: "kp.integrated.d", mastery: "partial" },
         ],
       },
     ],
   },
   {
     id: "math",
-    name: "數學",
+    name: "subj.math",
     emoji: "📐",
-    color: "primary",
     chapters: [
       {
         id: "algebra",
-        name: "代數",
+        name: "ch.math.algebra",
         points: [
-          { id: "quadratic", name: "二次方程", desc: "因式分解、配方法、公式", mastery: "mastered" },
-          { id: "functions", name: "函數及其圖像", desc: "一次、二次、指數函數", mastery: "partial" },
-          { id: "polynomial", name: "多項式", desc: "除法定理、餘式定理", mastery: "weak" },
+          { id: "quadratic", name: "kp.quadratic.n", desc: "kp.quadratic.d", mastery: "mastered" },
+          { id: "functions", name: "kp.functions.n", desc: "kp.functions.d", mastery: "partial" },
+          { id: "polynomial", name: "kp.polynomial.n", desc: "kp.polynomial.d", mastery: "weak" },
         ],
       },
       {
         id: "geometry",
-        name: "幾何與三角",
+        name: "ch.math.geometry",
         points: [
-          { id: "trigonometry", name: "三角學", desc: "正弦、餘弦、正切定理", mastery: "partial" },
-          { id: "circle", name: "圓的性質", desc: "弦切角、圓冪定理", mastery: "weak" },
-          { id: "coordinate", name: "坐標幾何", desc: "直線、圓的方程", mastery: "mastered" },
+          { id: "trigonometry", name: "kp.trigonometry.n", desc: "kp.trigonometry.d", mastery: "partial" },
+          { id: "circle", name: "kp.circle.n", desc: "kp.circle.d", mastery: "weak" },
+          { id: "coordinate", name: "kp.coordinate.n", desc: "kp.coordinate.d", mastery: "mastered" },
         ],
       },
       {
         id: "statistics",
-        name: "統計與概率",
+        name: "ch.math.statistics",
         points: [
-          { id: "probability", name: "概率", desc: "互斥事件、獨立事件", mastery: "partial" },
-          { id: "distribution", name: "正態分佈", desc: "標準分、百分位數", mastery: "weak" },
+          { id: "probability", name: "kp.probability.n", desc: "kp.probability.d", mastery: "partial" },
+          { id: "distribution", name: "kp.distribution.n", desc: "kp.distribution.d", mastery: "weak" },
         ],
       },
     ],

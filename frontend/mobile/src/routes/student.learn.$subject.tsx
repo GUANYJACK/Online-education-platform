@@ -41,26 +41,14 @@ function SubjectPage() {
     0,
   );
 
-  const chapterName = (ch: { id: string; name: string }) => {
-    const key = `ch.${s.id}.${ch.id}`;
-    const translated = t(key);
-    return translated === key ? ch.name : translated;
-  };
+  const chapterName = (ch: { id: string; name: string }) => t(ch.name);
 
-  const kpName = (p: { id: string; name: string }) => {
-    const key = `kp.${p.id}.n`;
-    const translated = t(key);
-    return translated === key ? p.name : translated;
-  };
+  const kpName = (p: { id: string; name: string }) => t(p.name);
 
-  const kpDesc = (p: { id: string; desc: string }) => {
-    const key = `kp.${p.id}.d`;
-    const translated = t(key);
-    return translated === key ? p.desc : translated;
-  };
+  const kpDesc = (p: { id: string; desc: string }) => t(p.desc);
 
   return (
-    <MobileShell title={t(`subj.${s.id}`)} back>
+    <MobileShell title={t(s.name)} back>
       {/* Subject stats bar */}
       <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-3.5 shadow-sm">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-xl">
@@ -68,7 +56,7 @@ function SubjectPage() {
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground/70">总进度</span>
+            <span className="text-xs text-muted-foreground/70">{t("learn.totalProgress")}</span>
             <span className="text-xs font-bold text-primary">
               {totalPoints > 0 ? Math.round((masteredPoints / totalPoints) * 100) : 0}%
             </span>
@@ -82,7 +70,7 @@ function SubjectPage() {
         </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground/60">
           <BookOpen className="h-3.5 w-3.5" />
-          <span>{s.chapters.length} 章</span>
+          <span>{t("learn.totalChapters", { n: s.chapters.length })}</span>
         </div>
       </div>
 

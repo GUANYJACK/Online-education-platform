@@ -417,39 +417,35 @@
       "weighting": 80,
       "components": [
         {
-          "component": "Paper 1",
-          "weighting": 30,
-          "description": "阅读理解"
+          "component": "Paper 1（阅读）",
+          "weighting": 25,
+          "description": "阅读理解，考查对不同文体英语文章的阅读能力"
         },
         {
-          "component": "Paper 2",
-          "weighting": 30,
-          "description": "写作"
+          "component": "Paper 2（写作）",
+          "weighting": 25,
+          "description": "写作，考查不同文体及用途的英语写作能力"
         },
         {
-          "component": "Paper 3",
+          "component": "Paper 3（聆听及综合能力）",
+          "weighting": 30,
+          "description": "聆听及综合能力，包括听力理解及综合运用语言技能"
+        },
+        {
+          "component": "Paper 4（说话）",
           "weighting": 20,
-          "description": "英语运用"
+          "description": "说话能力（口试），包括小组讨论及独立陈述"
         }
       ]
     },
     "school_based": {
       "weighting": 20,
+      "note": "校本评估（SBA）占总成绩20%，纳入Paper 4说话能力评核中",
       "components": [
         {
-          "component": "课堂参与",
-          "weighting": 5,
-          "description": "课堂表现和讨论"
-        },
-        {
-          "component": "作业",
-          "weighting": 5,
-          "description": "作业完成质量"
-        },
-        {
-          "component": "项目",
-          "weighting": 10,
-          "description": "专题研究和展示"
+          "component": "校本说话评核（SBA）",
+          "weighting": 20,
+          "description": "学校评核学生的英语说话能力，包括课堂汇报及小组讨论"
         }
       ]
     }

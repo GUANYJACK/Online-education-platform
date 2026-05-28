@@ -106,6 +106,8 @@ model Chapter {
   subjectId String
   subject   Subject   @relation(fields: [subjectId], references: [id])
   knowledgePoints KnowledgePoint[]
+
+  @@unique([subjectId, name])
 }
 
 model KnowledgePoint {
@@ -115,6 +117,8 @@ model KnowledgePoint {
   chapterId String
   chapter   Chapter   @relation(fields: [chapterId], references: [id])
   progressRecords Progress[]
+
+  @@unique([chapterId, name])
 }
 
 model Progress {

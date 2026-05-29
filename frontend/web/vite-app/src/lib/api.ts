@@ -122,6 +122,31 @@ export async function apiGetClassStudents(
   return data;
 }
 
+export interface ApiMentalHealthRecord {
+  id: string;
+  scoreDelta: number;
+  statusScore: number;
+  statusLabel: string;
+  riskLevel: string;
+  emotionPolarity: string;
+  signals: string[];
+  createdAt: string;
+  sourceSessionId: string | null;
+}
+
+export async function apiGetMentalHealthHistory(
+  studentId: string,
+  limit = 100,
+): Promise<ApiMentalHealthRecord[]> {
+  const params = new URLSearchParams({ studentId, limit: String(limit) });
+  const res = await fetch(`${API_BASE}/ai/mental-health/history?${params}`, {
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? 'Failed to load mental health history');
+  return data.history;
+}
+
 export interface ApiProgressKP {
   name: string;
   mastery: 'MASTERED' | 'PARTIAL' | 'UNMASTERED';

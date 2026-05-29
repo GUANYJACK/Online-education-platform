@@ -306,11 +306,20 @@ export const checkMentalHealth = async (req: AuthRequest, res: Response): Promis
 
 export const getMentalHealthHistory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const studentId = req.user?.id;
-    if (!studentId) {
+    const caller = req.user;
+    if (!caller) {
       res.status(401).json({ error: 'User not authenticated' });
       return;
     }
+
+    // Teachers and admins may pass ?studentId= to view another student's history
+    const isPrivileged = caller.role === 'TEACHER' || caller.role === 'SCHOOL_ADMIN';
+    const requestedId = req.query.studentId as string | undefined;
+    if (requestedId && !isPrivileged) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+    const studentId = (isPrivileged && requestedId) ? requestedId : caller.id;
 
     const sessionId = req.query.sessionId as string | undefined;
     const limit = Math.min(parseInt((req.query.limit as string) || '100', 10), 500);

@@ -27,8 +27,8 @@ import {
   Tabs,
 } from '../components/primitives';
 import { MasteryHeatmap, PointMasteryRow, Sparkline } from '../components/charts';
-import { ActivityItem } from './Dashboard';
 import { ClassMentalHealth } from './MentalHealth';
+import { ActivityItem } from './Dashboard';
 
 interface ViewClassDetailProps {
   klass: Klass;

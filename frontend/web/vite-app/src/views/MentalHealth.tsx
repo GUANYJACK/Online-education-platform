@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import type { Klass, NavState } from '../types';
-import { STRESS_KEYWORDS } from '../lib/data';
 import { classAvgSentiment, classRiskDist } from '../lib/mastery';
 import { classDisplayName, t } from '../lib/i18n';
 import { showToast } from '../lib/toast';
@@ -15,7 +14,7 @@ import {
   RiskBadge,
   StatTile,
 } from '../components/primitives';
-import { Donut, KeywordCloud, SentimentMeter, Sparkline } from '../components/charts';
+import { Donut, SentimentMeter, Sparkline } from '../components/charts';
 
 interface ClassMentalHealthProps {
   klass: Klass;
@@ -26,7 +25,11 @@ export function ClassMentalHealth({ klass, onNavigate }: ClassMentalHealthProps)
   const [filter, setFilter] = useState('all');
   const risk = classRiskDist(klass);
   const avgS = classAvgSentiment(klass);
-  const filtered = klass.students.filter((s) => filter === 'all' || s.risk === filter);
+  const filtered = klass.students.filter((s) =>
+    filter === 'all' ? true :
+    filter === 'medium' ? s.risk === 'medium' || s.risk === 'high' :
+    s.risk === filter,
+  );
   const riskOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
   const sorted = [...filtered].sort(
     (a, b) => (riskOrder[a.risk] - riskOrder[b.risk]) || a.sentiment - b.sentiment,
@@ -78,10 +81,6 @@ export function ClassMentalHealth({ klass, onNavigate }: ClassMentalHealthProps)
               <span className="senti-num-lbl">{t('vs. last week +0.03')}</span>
             </div>
           </div>
-          <div className="kw-section">
-            <div className="hint-muted" style={{ marginBottom: 8 }}>{t('Top stress keywords this week')}</div>
-            <KeywordCloud keywords={STRESS_KEYWORDS.slice(0, 8).map((k) => ({ ...k, word: t(k.word) }))} />
-          </div>
         </Card>
       </div>
 
@@ -129,10 +128,11 @@ export function ClassMentalHealth({ klass, onNavigate }: ClassMentalHealthProps)
                 </td>
                 <td>
                   <div className="kw-tags kw-tags--inline">
-                    {(s.risk === 'high' ? ['exam pressure', 'sleep'] :
-                      s.risk === 'medium' ? ['homework load'] : ['—']).map((k) => (
-                      <span key={k} className="kw-tag">{k === '—' ? k : t(k)}</span>
-                    ))}
+                    {s.mentalHealthKeywords
+                      ? s.mentalHealthKeywords.split(',').map((k) => k.trim()).filter(Boolean).slice(0, 3)
+                          .map((k) => <span key={k} className="kw-tag">{k}</span>)
+                      : <span className="kw-tag">—</span>
+                    }
                   </div>
                 </td>
                 <td style={{ textAlign: 'right' }}>

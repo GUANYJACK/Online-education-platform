@@ -10,6 +10,7 @@ import {
   pointMasteryDist,
 } from '../lib/mastery';
 import { classDisplayName, subjectLabel, t } from '../lib/i18n';
+import { showToast } from '../lib/toast';
 import { lastActiveStr, pct } from '../lib/format';
 import {
   Avatar,
@@ -60,8 +61,8 @@ export function ViewDashboard({ classes, onNavigate, profile }: ViewProps) {
           <p className="view__sub">{t('Here\u2019s how your {n} classes are tracking this week.', { n: classes.length })}</p>
         </div>
         <div className="view__actions">
-          <button className="btn btn--ghost"><Icon name="download" /> {t('Export report')}</button>
-          <button className="btn btn--primary"><Icon name="plus" /> {t('New assessment')}</button>
+          <button className="btn btn--ghost" onClick={() => showToast(t('Coming soon'))}><Icon name="download" /> {t('Export report')}</button>
+          <button className="btn btn--primary" onClick={() => showToast(t('Coming soon'))}><Icon name="plus" /> {t('New assessment')}</button>
         </div>
       </div>
 

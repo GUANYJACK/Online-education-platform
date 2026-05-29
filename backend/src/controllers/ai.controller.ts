@@ -314,6 +314,14 @@ export const getMentalHealthHistory = async (req: AuthRequest, res: Response): P
       return;
     }
 
+    // Route guard ensures only TEACHER, SCHOOL_ADMIN, or PARENT reaches here.
+    // Callers must specify which student's history to view via ?studentId=
+    const studentId = req.query.studentId as string | undefined;
+    if (!studentId) {
+      res.status(400).json({ error: 'studentId query parameter is required' });
+      return;
+    }
+
     const sessionId = req.query.sessionId as string | undefined;
     const limit = Math.min(parseInt((req.query.limit as string) || '100', 10), 500);
 

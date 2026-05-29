@@ -321,7 +321,7 @@ const callOpenRouter = async (req: AIServiceRequest): Promise<string> => {
       systemPrompt,
       messages,
       temperature: 0.7,
-      maxTokens: 500
+      maxTokens: parseInt(process.env.OPENROUTER_MAX_TOKENS || '500', 10)
     }) || 'I apologize, I could not generate a response.';
 
     console.log('[AI Service] OpenRouter response received successfully');

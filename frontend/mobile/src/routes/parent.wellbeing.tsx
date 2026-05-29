@@ -9,7 +9,7 @@ import { TrendChart } from "@/components/cards/TrendChart";
 import { useT } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
 import { apiGetMentalHealthHistory, apiGetChildren } from "@/lib/api";
-import type { MentalHealthHistory, MentalHealthTrendPoint } from "@/lib/api";
+import type { MentalHealthHistory } from "@/lib/api";
 import { LucideProps } from "lucide-react";
 import {
   Activity,
@@ -47,25 +47,6 @@ function riskBadgeClass(r: string): string {
   if (r === "LOW") return "risk--low";
   if (r === "HIGH") return "risk--high";
   return "risk--medium";
-}
-
-/** Build SVG path + area sparkline from trend data */
-function buildSparkline(trend: MentalHealthTrendPoint[]): { areaPath: string; linePath: string } {
-  if (trend.length < 2) return { areaPath: "", linePath: "" };
-  const w = 240;
-  const h = 40;
-  const n = trend.length;
-  const scores = trend.map((p) => p.statusScore);
-  const min = Math.min(...scores);
-  const max = Math.max(...scores);
-  const range = Math.max(0.001, max - min);
-  const xs = (i: number) => (i / (n - 1)) * w;
-  const ys = (v: number) => h - ((v - min) / range) * (h - 4) - 2;
-
-  const linePts = trend.map((p, i) => `${i === 0 ? "M" : "L"}${xs(i).toFixed(1)} ${ys(p.statusScore).toFixed(1)}`);
-  const linePath = linePts.join(" ");
-  const areaPath = `${linePath} L${w} ${h} L0 ${h} Z`;
-  return { areaPath, linePath };
 }
 
 function WellbeingPage() {
@@ -148,17 +129,11 @@ function WellbeingPage() {
     ? Math.min(100, Math.max(0, ((latestScore + 100) / 200) * 100))
     : 50;
 
-  // Sparkline paths
-  const sparkPaths = useMemo(() => {
-    if (!data || data.trend.length < 2) return { areaPath: "", linePath: "" };
-    return buildSparkline(data.trend);
-  }, [data]);
-
   const chartData = useMemo(() => {
     if (!data || data.trend.length < 2) return [];
     return data.trend.map((p) => ({
       day: new Date(p.date).toLocaleDateString(undefined, { weekday: "short" }),
-      mastery: p.statusScore,
+      mastery: p.riskLevel === "HIGH" ? 3 : p.riskLevel === "MEDIUM" ? 2 : 1,
       time: Math.abs(p.scoreDelta),
     }));
   }, [data]);
@@ -223,23 +198,6 @@ function WellbeingPage() {
                   </div>
                 </div>
               </div>
-              {/* Sparkline */}
-              {sparkPaths.areaPath && (
-                <div className="mh-row mh-row--block">
-                  <span className="mh-label">{t("pw.moodTrend")}</span>
-                  <svg viewBox="0 0 240 40" className="spark">
-                    <path d={sparkPaths.areaPath} fill="oklch(0.95 0.04 60)" />
-                    <path
-                      d={sparkPaths.linePath}
-                      fill="none"
-                      stroke="var(--color-risk-mid)"
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-              )}
             </div>
           </div>
 

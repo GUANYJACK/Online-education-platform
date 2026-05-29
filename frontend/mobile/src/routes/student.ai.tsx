@@ -3,13 +3,14 @@ import { useState, useRef, useEffect, Fragment, useMemo, useCallback } from "rea
 import { createPortal } from "react-dom";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { studentTabs } from "@/components/mobile/student-tabs";
+import { MarkdownContent } from "@/components/MarkdownContent";
 import { subjects as mockSubjects } from "@/lib/mock-data";
 import { useCurriculum } from "@/lib/useCurriculum";
 import { apiChat, apiCreateChatSession, apiGetChatSessions, apiGetChatSession, apiDeleteChatSession } from "@/lib/api";
 import { useT, useLang } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
-import { getSocraticPrompt } from "@/lib/prompts";
-import { Send, Mic, Sparkles, MessageSquare, ShieldAlert, History, Plus, X, Trash2 } from "lucide-react";
+import { getSocraticPrompt, getGuidedPrompt } from "@/lib/prompts";
+import { Send, Mic, Sparkles, MessageSquare, ShieldAlert, History, Plus, X, Trash2, Bot } from "lucide-react";
 
 export const Route = createFileRoute("/student/ai")({
   component: AIChat,
@@ -20,7 +21,12 @@ export const Route = createFileRoute("/student/ai")({
   }),
 });
 
-interface Msg { role: "user" | "ai"; text: string; blocked?: boolean }
+interface Msg {
+  role: "user" | "ai";
+  text: string;
+  blocked?: boolean;
+  kps?: { name: string; subject: string; chapter: string }[];
+}
 
 function AIChat() {
   const t = useT();
@@ -74,12 +80,12 @@ function AIChat() {
     if (initializedRef.current) return;
     initializedRef.current = true;
     if (kpInfo) {
-      setMessages([{ role: "ai", text: t("ai.greet.kp", { kp: kpInfo.name, desc: kpInfo.desc, subject: kpInfo.subjectName, chapter: kpInfo.chapterName }) }]);
+      setMessages([{ role: "ai", text: t("ai.greet.kp", { kp: kpInfo.name, desc: kpInfo.desc, subject: kpInfo.subjectName, chapter: kpInfo.chapterName }), kps: kpIndex }]);
       setMode("guided");
     } else {
-      setMessages([{ role: "ai", text: t("ai.greet.free") }]);
+      setMessages([{ role: "ai", text: t("ai.greet.free"), kps: kpIndex }]);
     }
-  }, [kpInfo, t]);
+  }, [kpInfo, t, kpIndex]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,7 +95,6 @@ function AIChat() {
   const refreshSessions = useCallback(async () => {
     try {
       const res = await apiGetChatSessions();
-      // Replace local cache with backend data
       useAppStore.setState({ aiSessions: [] });
       res.sessions.forEach((s: any) => {
         saveSession({
@@ -110,25 +115,28 @@ function AIChat() {
   const switchMode = (m: "free" | "guided") => {
     if (m === mode) return;
     setMode(m);
-    setMessages([{ role: "ai", text: t(m === "guided" ? "ai.greet.guided" : "ai.greet.free") }]);
+    setMessages([{ role: "ai", text: t(m === "guided" ? "ai.greet.guided" : "ai.greet.free"), kps: kpIndex }]);
     setSessionId(null);
   };
 
   const newChat = async () => {
-    setMessages([{ role: "ai", text: t(mode === "guided" ? "ai.greet.guided" : "ai.greet.free") }]);
+    setMessages([{ role: "ai", text: t(mode === "guided" ? "ai.greet.guided" : "ai.greet.free"), kps: kpIndex }]);
     try {
       const subject = kpInfo?.subjectName || undefined;
       const topic = kpInfo?.name || undefined;
       const chapter = kpInfo ? urlChapter : undefined;
       const knowledgepoint = kpInfo?.name || undefined;
       const grade = useAppStore.getState().grade;
-      const socraticBase = getSocraticPrompt(lang, grade);
+
+      const basePrompt = mode === "guided"
+        ? getGuidedPrompt(lang)
+        : getSocraticPrompt(lang, grade);
 
       let systemPrompt = "";
       if (mode === "guided" && kpInfo) {
-        systemPrompt = `${socraticBase}\n\n# Current Context\nSubject: ${kpInfo.subjectName}\nChapter: ${kpInfo.chapterName}\nKnowledge Point: ${kpInfo.name}\nGrade: ${grade}`;
+        systemPrompt = `${basePrompt}\n\n# Current Context\nSubject: ${kpInfo.subjectName}\nChapter: ${kpInfo.chapterName}\nKnowledge Point: ${kpInfo.name}\nGrade: ${grade}`;
       } else {
-        systemPrompt = socraticBase;
+        systemPrompt = basePrompt;
       }
 
       const res = await apiCreateChatSession({
@@ -141,7 +149,6 @@ function AIChat() {
         systemPrompt,
       });
       setSessionId(res.session.sessionId);
-      // Save to local cache for immediate display in history
       saveSession({
         id: res.session.sessionId,
         title: res.session.title,
@@ -161,18 +168,17 @@ function AIChat() {
     setHistoryOpen(false);
     try {
       const res = await apiGetChatSession(sid);
-      // Convert backend ChatHistory[] to local Msg[]
       const history: Msg[] = res.session.chatHistories.map((h: any) => ({
         role: h.sender === "USER" ? "user" : "ai",
         text: h.message,
+        kps: kpIndex,
       }));
-      setMessages(history.length > 0 ? history : [{ role: "ai", text: t("ai.greet.guided") }]);
+      setMessages(history.length > 0 ? history : [{ role: "ai", text: t("ai.greet.guided"), kps: kpIndex }]);
       setSessionId(sid);
     } catch {
-      // Fallback to local if available
       const s = aiSessions.find((x) => x.id === sid);
       if (s) {
-        setMessages([{ role: "ai", text: t("ai.greet.guided") }]);
+        setMessages([{ role: "ai", text: t("ai.greet.guided"), kps: kpIndex }]);
         setSessionId(s.id);
       }
     } finally {
@@ -204,13 +210,16 @@ function AIChat() {
           const chapter = kpInfo ? urlChapter : undefined;
           const knowledgepoint = kpInfo?.name || undefined;
           const grade = useAppStore.getState().grade;
-          const socraticBase = getSocraticPrompt(lang, grade);
+
+          const basePrompt = mode === "guided"
+            ? getGuidedPrompt(lang)
+            : getSocraticPrompt(lang, grade);
 
           let systemPrompt = "";
           if (mode === "guided" && kpInfo) {
-            systemPrompt = `${socraticBase}\n\n# Current Context\nSubject: ${kpInfo.subjectName}\nChapter: ${kpInfo.chapterName}\nKnowledge Point: ${kpInfo.name}\nGrade: ${grade}`;
+            systemPrompt = `${basePrompt}\n\n# Current Context\nSubject: ${kpInfo.subjectName}\nChapter: ${kpInfo.chapterName}\nKnowledge Point: ${kpInfo.name}\nGrade: ${grade}`;
           } else {
-            systemPrompt = socraticBase;
+            systemPrompt = basePrompt;
           }
 
           const res = await apiCreateChatSession({
@@ -239,7 +248,7 @@ function AIChat() {
 
       if (currentSessionId) {
         const res = await apiChat({ sessionId: currentSessionId, message: text });
-        setMessages((m) => [...m, { role: "ai", text: res.response }]);
+        setMessages((m) => [...m, { role: "ai", text: res.response, kps: kpIndex }]);
       } else {
         throw new Error("No session available");
       }
@@ -253,36 +262,24 @@ function AIChat() {
 
   const tryVoice = () => alert(t("ai.voiceAlert"));
 
-  const renderText = (text: string) => {
-    const matches: { start: number; end: number; subject: string; chapter: string; name: string }[] = [];
-    for (const kpItem of kpIndex) {
-      let i = 0;
-      while ((i = text.indexOf(kpItem.name, i)) !== -1) {
-        matches.push({ start: i, end: i + kpItem.name.length, ...kpItem });
-        i += kpItem.name.length;
+  // Pre-process text: replace knowledge point names with markdown links
+  const processTextWithKpLinks = useCallback(
+    (text: string): string => {
+      let processed = text;
+      // Sort by length descending so longer names match first
+      const sorted = [...kpIndex].sort((a, b) => b.name.length - a.name.length);
+      for (const kpItem of sorted) {
+        const escaped = kpItem.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`(?<!\\[)${escaped}(?!\\))`, "g");
+        processed = processed.replace(
+          regex,
+          `[${kpItem.name}](/student/learn/${kpItem.subject}/${kpItem.chapter})`,
+        );
       }
-    }
-    matches.sort((a, b) => a.start - b.start);
-    const filtered: typeof matches = [];
-    let lastEnd = -1;
-    for (const m of matches) {
-      if (m.start >= lastEnd) { filtered.push(m); lastEnd = m.end; }
-    }
-    if (filtered.length === 0) return text;
-    const parts: React.ReactNode[] = [];
-    let pos = 0;
-    filtered.forEach((m, i) => {
-      if (pos < m.start) parts.push(<Fragment key={`t${i}`}>{text.slice(pos, m.start)}</Fragment>);
-      parts.push(
-        <Link key={`l${i}`} to="/student/learn/$subject/$chapter" params={{ subject: m.subject, chapter: m.chapter }} className="font-semibold text-primary underline underline-offset-2 decoration-primary/30">
-          {m.name}
-        </Link>,
-      );
-      pos = m.end;
-    });
-    if (pos < text.length) parts.push(<Fragment key="tail">{text.slice(pos)}</Fragment>);
-    return parts;
-  };
+      return processed;
+    },
+    [kpIndex],
+  );
 
   const modeBg = mode === "guided"
     ? "bg-gradient-to-b from-primary-soft/30 via-background to-background"
@@ -298,46 +295,46 @@ function AIChat() {
             className="pointer-events-auto flex h-full w-[78%] max-w-[320px] flex-col bg-background shadow-2xl slide-in-right"
             onClick={(e) => e.stopPropagation()}
           >
-          <div className="flex items-center justify-between border-b border-border/40 px-4 py-3.5">
-            <h3 className="text-sm font-bold">{t("ai.history")}</h3>
-            <button onClick={() => setHistoryOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-muted">
-              <X className="h-4 w-4 text-muted-foreground/60" />
+            <div className="flex items-center justify-between border-b border-border/40 px-4 py-3.5">
+              <h3 className="text-sm font-bold">{t("ai.history")}</h3>
+              <button onClick={() => setHistoryOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-muted">
+                <X className="h-4 w-4 text-muted-foreground/60" />
+              </button>
+            </div>
+            <button
+              onClick={newChat}
+              className="m-3 flex items-center justify-center gap-2 rounded-2xl bg-primary py-2.5 text-xs font-semibold text-primary-foreground shadow-sm"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t("ai.newChat")}
             </button>
+            <div className="flex-1 overflow-y-auto px-3 pb-4">
+              {aiSessions.length === 0 ? (
+                <p className="mt-8 text-center text-xs text-muted-foreground/50">{t("ai.noHistory")}</p>
+              ) : (
+                <ul className="space-y-2">
+                  {aiSessions.map((s) => (
+                    <li
+                      key={s.id}
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
+                        s.id === sessionId ? "border-primary/40 bg-primary-soft/50" : "border-border/40 bg-card hover:bg-muted/30"
+                      }`}
+                    >
+                      <button onClick={() => loadSession(s.id)} className="flex-1 text-left">
+                        <p className="line-clamp-1 text-xs font-medium">{s.title}</p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground/50">
+                          {s.topic ? `${s.topic} · ` : ""}{s.subject || t(`ai.mode.${s.mode}`)} · {new Date(s.createdAt).toLocaleString()}
+                        </p>
+                      </button>
+                      <button onClick={() => deleteSession(s.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
-          <button
-            onClick={newChat}
-            className="m-3 flex items-center justify-center gap-2 rounded-2xl bg-primary py-2.5 text-xs font-semibold text-primary-foreground shadow-sm"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {t("ai.newChat")}
-          </button>
-          <div className="flex-1 overflow-y-auto px-3 pb-4">
-            {aiSessions.length === 0 ? (
-              <p className="mt-8 text-center text-xs text-muted-foreground/50">{t("ai.noHistory")}</p>
-            ) : (
-              <ul className="space-y-2">
-                {aiSessions.map((s) => (
-                  <li
-                    key={s.id}
-                    className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
-                      s.id === sessionId ? "border-primary/40 bg-primary-soft/50" : "border-border/40 bg-card hover:bg-muted/30"
-                    }`}
-                  >
-                    <button onClick={() => loadSession(s.id)} className="flex-1 text-left">
-                      <p className="line-clamp-1 text-xs font-medium">{s.title}</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground/50">
-                        {s.topic ? `${s.topic} · ` : ""}{s.subject || t(`ai.mode.${s.mode}`)} · {new Date(s.createdAt).toLocaleString()}
-                      </p>
-                    </button>
-                    <button onClick={() => deleteSession(s.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
         </div>
       </div>,
       document.body,
@@ -387,45 +384,50 @@ function AIChat() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 space-y-3 px-4 py-4 pb-28">
+          <div className="flex-1 px-4 py-4 pb-28">
             {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-                    m.role === "user"
-                      ? "rounded-br-md bg-primary text-primary-foreground"
-                      : m.blocked
-                        ? "rounded-bl-md border border-destructive/20 bg-weak-soft/80 text-weak"
-                        : "rounded-bl-md border border-border/40 bg-card text-foreground"
-                  }`}
-                >
-                  {m.blocked && <ShieldAlert className="mb-1 inline h-3.5 w-3.5 mr-1" />}
-                  {m.role === "ai" && !m.blocked ? renderText(m.text) : m.text}
-                </div>
+              <div key={i} className={m.role === "user" ? "mb-4 flex justify-end" : "mb-6"}>
+                {m.role === "ai" ? (
+                  <div className="flex gap-2.5">
+                    {/* AI avatar */}
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-soft/60 mt-0.5">
+                      <Bot className="h-4 w-4 text-primary/70" />
+                    </div>
+                    {/* Flat content — no bubble */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      {m.blocked ? (
+                        <div className="flex items-start gap-1.5 rounded-lg border border-destructive/15 bg-weak-soft/50 px-3 py-2.5">
+                          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-weak" />
+                          <p className="text-sm leading-[1.7] text-weak">{m.text}</p>
+                        </div>
+                      ) : (
+                        <MarkdownContent content={processTextWithKpLinks(m.text)} />
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* User message — keep as bubble */
+                  <div className="max-w-[78%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground shadow-sm shadow-primary/10">
+                    {m.text}
+                  </div>
+                )}
               </div>
             ))}
-            {loadingSession && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md border border-border/40 bg-card px-5 py-3 shadow-sm">
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:0ms]" />
-                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:150ms]" />
-                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:300ms]" />
-                  </div>
+
+            {/* Loading indicator — flat, no bubble */}
+            {(sending || loadingSession) && (
+              <div className="mb-6 flex gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-soft/60 mt-0.5">
+                  <Bot className="h-4 w-4 text-primary/70" />
+                </div>
+                <div className="flex items-center gap-1.5 pt-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:0ms]" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:150ms]" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:300ms]" />
                 </div>
               </div>
             )}
-            {sending && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md border border-border/40 bg-card px-4 py-3 shadow-sm">
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:0ms]" />
-                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:150ms]" />
-                    <span className="inline-block h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:300ms]" />
-                  </div>
-                </div>
-              </div>
-            )}
+
             <div ref={endRef} />
           </div>
         </div>

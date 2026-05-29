@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiGetProgress, ApiProgressItem, ApiMastery } from "./api";
+import { apiGetLearningReport } from "./api";
+import type { ApiMastery } from "./api";
 
 export type Mastery = "mastered" | "partial" | "weak";
 
@@ -29,46 +30,44 @@ function mapMastery(m: ApiMastery): Mastery {
   return "weak";
 }
 
-/**
- * Extract subjects/chapters/KPs from the progress API response.
- * Each progress item contains knowledgePoint → chapter → subject.
- * We build the curriculum tree and merge mastery from progress records.
- */
-function buildCurriculum(progressItems: ApiProgressItem[]): Subject[] {
-  const subjectMap = new Map<string, Subject>();
+const subjectEmojis: Record<string, string> = {
+  mathematics: "📐",
+  數學: "📐",
+  math: "📐",
+  english: "🌍",
+  英語: "🌍",
+  chinese: "📖",
+  語文: "📖",
+};
 
-  for (const item of progressItems) {
-    const { knowledgePoint } = item;
-    const { chapter } = knowledgePoint;
-    const { subject } = chapter;
-
-    if (!subjectMap.has(subject.id)) {
-      subjectMap.set(subject.id, {
-        id: subject.id,
-        name: subject.name,
-        emoji: subject.emoji || "📚",
-        chapters: [],
-      });
-    }
-    const subj = subjectMap.get(subject.id)!;
-
-    let chap = subj.chapters.find((c) => c.id === chapter.id);
-    if (!chap) {
-      chap = { id: chapter.id, name: chapter.name, points: [] };
-      subj.chapters.push(chap);
-    }
-
-    if (!chap.points.find((p) => p.id === knowledgePoint.id)) {
-      chap.points.push({
-        id: knowledgePoint.id,
-        name: knowledgePoint.name,
-        desc: knowledgePoint.desc || "",
-        mastery: mapMastery(item.mastery),
-      });
-    }
+function getSubjectEmoji(name: string): string {
+  const key = name.toLowerCase();
+  for (const [k, v] of Object.entries(subjectEmojis)) {
+    if (key.includes(k)) return v;
   }
+  return "📚";
+}
 
-  return Array.from(subjectMap.values());
+/**
+ * Build curriculum tree from the learning report API.
+ * The report already returns subject → chapter → knowledgePoints hierarchy.
+ */
+function buildCurriculumFromReport(report: Awaited<ReturnType<typeof apiGetLearningReport>>): Subject[] {
+  return report.subjects.map((s, idx) => ({
+    id: String(idx),
+    name: s.subject,
+    emoji: getSubjectEmoji(s.subject),
+    chapters: s.chapters.map((c, cIdx) => ({
+      id: String(cIdx),
+      name: c.chapter,
+      points: c.knowledgePoints.map((kp, kpIdx) => ({
+        id: String(kpIdx),
+        name: kp.name,
+        desc: "",
+        mastery: mapMastery(kp.mastery),
+      })),
+    })),
+  }));
 }
 
 export function useCurriculum(studentId: string | null) {
@@ -76,8 +75,8 @@ export function useCurriculum(studentId: string | null) {
     queryKey: ["curriculum", studentId] as const,
     queryFn: async (): Promise<Subject[]> => {
       if (!studentId) return [];
-      const progress = await apiGetProgress(studentId);
-      return buildCurriculum(progress);
+      const report = await apiGetLearningReport(studentId);
+      return buildCurriculumFromReport(report);
     },
     enabled: !!studentId,
     staleTime: 30_000,

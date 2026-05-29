@@ -324,3 +324,108 @@
 .safe-bottom {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
 }
+
+/* ─── Mental Health Dashboard ─── */
+.mh-section {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mh-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mh-row--block {
+  display: block;
+}
+
+.mh-label {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+  font-family: "PingFang SC", "Noto Sans SC", "Source Han Sans CN", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+/* Sentiment gauge */
+.senti {
+  position: relative;
+  padding: 4px 0 16px;
+}
+
+.senti__track {
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--color-risk-high), var(--color-risk-mid), var(--color-risk-low));
+}
+
+.senti__marker {
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-card);
+  border: 2.5px solid var(--color-risk-mid);
+  transform: translateX(-50%);
+  box-shadow: 0 1px 4px oklch(0.2 0.02 65 / 0.1);
+}
+
+.senti__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--color-muted-foreground);
+}
+
+/* Sparkline */
+.spark {
+  display: block;
+  width: 100%;
+  height: 40px;
+}
+
+/* Risk badge */
+.risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "PingFang SC", "Noto Sans SC", "Source Han Sans CN", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+.risk__bullet {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.risk--low {
+  color: var(--color-risk-low);
+  background: oklch(from var(--color-risk-low) l c h / 0.1);
+}
+.risk--low .risk__bullet {
+  background: var(--color-risk-low);
+}
+
+.risk--medium {
+  color: var(--color-risk-mid);
+  background: oklch(from var(--color-risk-mid) l c h / 0.1);
+}
+.risk--medium .risk__bullet {
+  background: var(--color-risk-mid);
+}
+
+.risk--high {
+  color: var(--color-risk-high);
+  background: oklch(from var(--color-risk-high) l c h / 0.1);
+}
+.risk--high .risk__bullet {
+  background: var(--color-risk-high);
+}

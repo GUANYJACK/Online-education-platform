@@ -178,6 +178,7 @@ export const ZH_TW: Record<string, string> = {
   'AI emotion analysis to be integrated post-MVP. Showing reserved aggregate placeholder.': 'AI 情緒分析將於 MVP 之後整合。此處為預留之彙總佔位介面。',
   'Sentiment': '情緒指標',
   '14-day sentiment trend': '14 日情緒趨勢',
+  '{n}-point sentiment trend': '{n} 點情緒趨勢',
   'Recent stress keywords': '近期壓力關鍵字',
   '{n} chapters · {p} points': '{n} 章 · {p} 知識點',
 

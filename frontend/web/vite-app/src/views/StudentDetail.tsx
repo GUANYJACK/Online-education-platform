@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { Chapter, Klass, NavState, Student, Subject } from '../types';
-import type { ApiStudentReport } from '../lib/api';
+import type { ApiMentalHealthRecord, ApiStudentReport } from '../lib/api';
 import { SUBJECTS } from '../lib/data';
 import {
   chaptersFor,
@@ -31,9 +31,10 @@ interface ViewStudentDetailProps {
   klass: Klass;
   onNavigate: (n: NavState) => void;
   report?: ApiStudentReport;
+  mhHistory?: ApiMentalHealthRecord[];
 }
 
-export function ViewStudentDetail({ student, klass, onNavigate, report }: ViewStudentDetailProps) {
+export function ViewStudentDetail({ student, klass, onNavigate, report, mhHistory }: ViewStudentDetailProps) {
   const subjectIds: Subject['id'][] = ['math', 'english', 'chinese'];
   const overallMastery = subjectIds
     .map((id) => ({ id, m: studentMastery(student, id) }))
@@ -43,6 +44,15 @@ export function ViewStudentDetail({ student, klass, onNavigate, report }: ViewSt
   const avg = report && report.summary.totalKnowledgePoints > 0
     ? (report.summary.mastered + report.summary.partial * 0.5) / report.summary.totalKnowledgePoints
     : overallMastery.reduce((a, x) => a + x.m, 0) / (overallMastery.length || 1);
+
+  // Real sentiment trend from MH history — normalize statusScore [-100,100] → [-1,1]
+  // Take last 30 records (history is asc by createdAt); fall back to seeded trend
+  const sentimentTrend: number[] = mhHistory && mhHistory.length > 0
+    ? mhHistory.slice(-30).map((r) => Math.max(-1, Math.min(1, r.statusScore / 100)))
+    : student.sentimentTrend;
+  const currentSentiment = mhHistory && mhHistory.length > 0
+    ? Math.max(-1, Math.min(1, mhHistory[mhHistory.length - 1].statusScore / 100))
+    : student.sentiment;
 
 
   return (
@@ -117,11 +127,11 @@ export function ViewStudentDetail({ student, klass, onNavigate, report }: ViewSt
             <div className="mh-section">
               <div className="mh-row">
                 <span className="mh-label">{t('Sentiment')}</span>
-                <SentimentMeter value={student.sentiment} />
+                <SentimentMeter value={currentSentiment} />
               </div>
               <div className="mh-row mh-row--block">
-                <span className="mh-label">{t('14-day sentiment trend')}</span>
-                <Sparkline data={student.sentimentTrend.map((v) => v + 1)}
+                <span className="mh-label">{t('{n}-point sentiment trend', { n: sentimentTrend.length })}</span>
+                <Sparkline data={sentimentTrend.map((v) => v + 1)}
                   width={240} height={40} stroke="var(--risk-medium)" fill="oklch(0.95 0.04 60)" />
               </div>
               {student.mentalHealthKeywords && (

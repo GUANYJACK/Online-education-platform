@@ -15,7 +15,13 @@
       "Bash(npm install *)",
       "Bash(npm test *)",
       "Bash(npx vite *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(dir /s /b D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\backend\\\\*.ts D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\backend\\\\*.js D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\backend\\\\*.json D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\backend\\\\*.prisma)",
+      "Bash(dir /s /b D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\mobile\\\\*.ts D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\mobile\\\\*.tsx D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\mobile\\\\*.js D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\mobile\\\\*.jsx D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\mobile\\\\*.json)",
+      "Bash(dir /s /b D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\web\\\\*.ts D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\web\\\\*.tsx D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\web\\\\*.js D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\web\\\\*.jsx D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\frontend\\\\web\\\\*.json)",
+      "Bash(dir /s /b D:\\\\Documents\\\\Claude\\\\Projects\\\\Online Education Platform\\\\docs\\\\*.*)",
+      "Bash(dir *)"
     ]
   }
 }

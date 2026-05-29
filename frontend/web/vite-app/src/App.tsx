@@ -9,8 +9,10 @@ import {
   apiGetAdminDashboard,
   apiGetClassStudents,
   apiGetCurriculum,
+  apiGetMentalHealthHistory,
   apiGetStudentReport,
   apiGetTeacherDashboard,
+  type ApiMentalHealthRecord,
   type ApiSchoolStat,
   type ApiStudentReport,
 } from './lib/api';
@@ -75,6 +77,8 @@ export function App() {
   const fetchingStudents = useRef<Set<string>>(new Set());
   const [reportCache, setReportCache] = useState<Record<string, ApiStudentReport>>({});
   const fetchingReports = useRef<Set<string>>(new Set());
+  const [mhHistoryCache, setMhHistoryCache] = useState<Record<string, ApiMentalHealthRecord[]>>({});
+  const fetchingMhHistory = useRef<Set<string>>(new Set());
 
   useLang();
 
@@ -151,7 +155,18 @@ export function App() {
   useEffect(() => {
     if (nav.view !== 'student-detail' || !nav.studentId) return;
     fetchReportForStudent(nav.studentId);
+    fetchMhHistoryForStudent(nav.studentId);
   }, [nav.view, nav.studentId]);
+
+  function fetchMhHistoryForStudent(studentId: string) {
+    if (mhHistoryCache[studentId] || fetchingMhHistory.current.has(studentId)) return;
+    fetchingMhHistory.current.add(studentId);
+    apiGetMentalHealthHistory(studentId).then((history) => {
+      setMhHistoryCache((prev) => ({ ...prev, [studentId]: history }));
+    }).catch(() => {
+      fetchingMhHistory.current.delete(studentId);
+    });
+  }
 
   function handleLogin(token: string, user: AuthUser) {
     localStorage.setItem('lumen_token', token);
@@ -161,8 +176,10 @@ export function App() {
     setApiSchool(null);
     setStudentCache({});
     setReportCache({});
+    setMhHistoryCache({});
     fetchingStudents.current.clear();
     fetchingReports.current.clear();
+    fetchingMhHistory.current.clear();
     setNavRaw(initialNav(user));
   }
 
@@ -174,8 +191,10 @@ export function App() {
     setApiSchool(null);
     setStudentCache({});
     setReportCache({});
+    setMhHistoryCache({});
     fetchingStudents.current.clear();
     fetchingReports.current.clear();
+    fetchingMhHistory.current.clear();
     setNavRaw({ view: 'dashboard' });
   }
 
@@ -297,7 +316,8 @@ export function App() {
           )}
           {nav.view === 'student-detail' && student && klass && (
             <ViewStudentDetail student={student} klass={klass} onNavigate={setNav}
-              report={nav.studentId ? reportCache[nav.studentId] : undefined} />
+              report={nav.studentId ? reportCache[nav.studentId] : undefined}
+              mhHistory={nav.studentId ? mhHistoryCache[nav.studentId] : undefined} />
           )}
           {nav.view === 'mental-health' && (
             <ViewMentalHealth classes={isAdmin ? allClasses : classes} onNavigate={setNav} />

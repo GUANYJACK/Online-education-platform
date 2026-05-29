@@ -2,8 +2,10 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MobileShell } from "@/components/mobile/MobileShell";
 import { studentTabs } from "@/components/mobile/student-tabs";
+import { MarkdownContent } from "@/components/MarkdownContent";
 import { apiCreateChatSession, apiChat } from "@/lib/api";
-import { useT } from "@/lib/i18n";
+import { useT, useLang } from "@/lib/i18n";
+import { getMentalPrompt } from "@/lib/prompts";
 
 export const Route = createFileRoute("/student/treehole")({
   component: TreeHole,
@@ -17,6 +19,7 @@ interface Msg {
 
 function TreeHole() {
   const t = useT();
+  const lang = useLang();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [started, setStarted] = useState(false);
@@ -61,6 +64,7 @@ function TreeHole() {
       if (!currentSessionId) {
         const res = await apiCreateChatSession({
           type: "Mental",
+          systemPrompt: getMentalPrompt(lang),
         });
         currentSessionId = res.session.sessionId || res.session.id;
         setSessionId(currentSessionId);
@@ -149,7 +153,7 @@ function TreeHole() {
       </div>
 
       {/* Messages */}
-      <div className="space-y-3 pb-24">
+      <div className="px-4 pb-24">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="mb-3 text-2xl opacity-25">🌿</div>
@@ -170,27 +174,37 @@ function TreeHole() {
             )}
 
             {m.role === "tree" ? (
-              <div className="flex justify-start">
-                <div className="max-w-[82%]">
-                  <div className="rounded-2xl rounded-tl-md border border-mastered/10 bg-card px-4 py-3 shadow-sm">
-                    <p className="text-sm leading-[1.7] text-foreground/75">
-                      {m.text}
-                    </p>
-                  </div>
-                  <p className="mt-1 ml-1 text-[10px] text-muted-foreground/20">
+              <div className="mb-5 flex gap-2.5">
+                {/* Tree avatar */}
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-mastered-soft/60 mt-0.5">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 28 28"
+                    fill="none"
+                    className="tree-sway-2"
+                    style={{ transformOrigin: "center bottom" }}
+                  >
+                    <path d="M14 22V12" stroke="oklch(0.40_0.06_55)" strokeWidth="2.2" strokeLinecap="round" />
+                    <path d="M14 14C10 14 7 11 7 7.5C7 4 10 2 14 2C18 2 21 4 21 7.5C21 11 18 14 14 14Z" fill="oklch(0.62_0.16_150)" />
+                    <path d="M14 17C11 17 8.5 14.5 8.5 11.5C8.5 8.5 11 7 14 7C17 7 19.5 8.5 19.5 11.5C19.5 14.5 17 17 14 17Z" fill="oklch(0.70_0.14_145)" opacity="0.7" />
+                  </svg>
+                </div>
+                {/* Flat content — no bubble */}
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <MarkdownContent content={m.text} />
+                  <p className="mt-1.5 text-[10px] text-muted-foreground/25">
                     {formatTime(m.time)}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex justify-end">
-                <div className="max-w-[82%]">
-                  <div className="rounded-2xl rounded-tr-md bg-primary px-4 py-3 shadow-sm shadow-primary/10">
-                    <p className="text-sm leading-[1.7] text-primary-foreground/90">
-                      {m.text}
-                    </p>
-                  </div>
-                  <p className="mt-1 mr-1 text-right text-[10px] text-muted-foreground/20">
+              <div className="mb-4 flex justify-end">
+                <div className="max-w-[78%] rounded-2xl rounded-tr-md bg-primary px-4 py-3 shadow-sm shadow-primary/10">
+                  <p className="text-sm leading-[1.7] text-primary-foreground/90">
+                    {m.text}
+                  </p>
+                  <p className="mt-1 text-right text-[10px] text-primary-foreground/40">
                     {formatTime(m.time)}
                   </p>
                 </div>
@@ -199,17 +213,27 @@ function TreeHole() {
           </div>
         ))}
 
-        {/* Typing indicator */}
+        {/* Typing indicator — flat, no bubble */}
         {sending && (
-          <div className="flex justify-start">
-            <div className="max-w-[82%]">
-              <div className="rounded-2xl rounded-tl-md border border-mastered/10 bg-card px-4 py-3 shadow-sm">
-                <div className="flex items-center gap-1.5">
-                  <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:0ms]" />
-                  <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:150ms]" />
-                  <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:300ms]" />
-                </div>
-              </div>
+          <div className="mb-5 flex gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-mastered-soft/60 mt-0.5">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 28 28"
+                fill="none"
+                className="tree-sway-2"
+                style={{ transformOrigin: "center bottom" }}
+              >
+                <path d="M14 22V12" stroke="oklch(0.40_0.06_55)" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M14 14C10 14 7 11 7 7.5C7 4 10 2 14 2C18 2 21 4 21 7.5C21 11 18 14 14 14Z" fill="oklch(0.62_0.16_150)" />
+                <path d="M14 17C11 17 8.5 14.5 8.5 11.5C8.5 8.5 11 7 14 7C17 7 19.5 8.5 19.5 11.5C19.5 14.5 17 17 14 17Z" fill="oklch(0.70_0.14_145)" opacity="0.7" />
+              </svg>
+            </div>
+            <div className="flex items-center gap-1.5 pt-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:0ms]" />
+              <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:150ms]" />
+              <span className="inline-block h-2 w-2 rounded-full bg-mastered/60 animate-bounce [animation-delay:300ms]" />
             </div>
           </div>
         )}

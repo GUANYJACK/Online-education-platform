@@ -111,7 +111,32 @@ export async function apiUpdateProgress(body: {
   return request("/progress/update", { method: "POST", body: JSON.stringify(body) });
 }
 
-// AI Chat (session-based)
+export interface LearningReport {
+  student: { id: string; name: string };
+  summary: {
+    totalKnowledgePoints: number;
+    mastered: number;
+    partial: number;
+    unmastered: number;
+    totalStudyTimeSeconds: number;
+  };
+  subjects: Array<{
+    subject: string;
+    chapters: Array<{
+      chapter: string;
+      knowledgePoints: Array<{
+        name: string;
+        mastery: ApiMastery;
+        studyTimeSeconds: number;
+        updatedAt: string;
+      }>;
+    }>;
+  }>;
+}
+
+export async function apiGetLearningReport(studentId: string): Promise<LearningReport> {
+  return request(`/progress/${studentId}/report`);
+}
 
 export async function apiCreateChatSession(body: {
   type: "Socratic" | "Mental";

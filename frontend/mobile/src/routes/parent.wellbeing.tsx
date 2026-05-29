@@ -8,7 +8,6 @@ import { StatCard } from "@/components/cards/StatCard";
 import { TrendChart } from "@/components/cards/TrendChart";
 import { useT } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
-import { mockChildren } from "@/lib/mock-data";
 import { apiGetMentalHealthHistory, apiGetChildren } from "@/lib/api";
 import type { MentalHealthHistory } from "@/lib/api";
 import { LucideProps } from "lucide-react";
@@ -28,11 +27,7 @@ export const Route = createFileRoute("/parent/wellbeing")({
   component: WellbeingPage,
 });
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
-function statusColor(
-  label: string,
-): "primary" | "mastered" | "partial" | "weak" {
+function statusColor(label: string): "primary" | "mastered" | "partial" | "weak" {
   if (label === "GOOD") return "mastered";
   if (label === "BAD") return "weak";
   return "primary";
@@ -62,8 +57,6 @@ function riskBg(r: string): string {
   return "bg-partial/10 border-partial/20 text-partial";
 }
 
-// ── component ────────────────────────────────────────────────────────────────
-
 function WellbeingPage() {
   const t = useT();
   const navigate = useNavigate();
@@ -73,36 +66,43 @@ function WellbeingPage() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<MentalHealthHistory | null>(null);
 
-  // Resolve children list (try backend first, fall back to mock)
-  const [backendChildren, setBackendChildren] = useState<typeof mockChildren>([]);
-  const children = backendChildren.length > 0 ? backendChildren : mockChildren;
+  // Resolve children list from backend
+  const [backendChildren, setBackendChildren] = useState<
+    Array<{ id: string; name: string; avatar: string }>
+  >([]);
+  const [childrenReady, setChildrenReady] = useState(false);
+  const children = backendChildren;
   const child = useMemo(
     () => children.find((c) => c.id === boundChildId) ?? children[0],
     [children, boundChildId],
   );
 
+  // Fetch children once on mount
   useEffect(() => {
+    let cancelled = false;
     apiGetChildren()
       .then((list) => {
-        if (list.length > 0) {
-          setBackendChildren(
-            list.map((c, i) => ({
-              id: c.id,
-              name: c.name,
-              grade: "",
-              lastSync: "",
-              avatar: i === 0 ? "👦" : "👧",
-            })),
-          );
-        }
+        if (cancelled) return;
+        setBackendChildren(
+          list.map((c, i) => ({
+            id: c.id,
+            name: c.name,
+            avatar: i % 2 === 0 ? "👦" : "👧",
+          })),
+        );
       })
       .catch(() => {
-        /* keep mock */
+        /* keep empty */
+      })
+      .finally(() => {
+        if (!cancelled) setChildrenReady(true);
       });
-  }, []);
+    return () => { cancelled = true; };
+  }, []); // mount-only
 
-  // Fetch mental health history when the active child changes
+  // Fetch mental health history only after children are loaded AND we have a child selected
   useEffect(() => {
+    if (!childrenReady) return;
     if (!child) return;
     let cancelled = false;
     setLoading(true);
@@ -119,12 +119,9 @@ function WellbeingPage() {
         if (!cancelled) setLoading(false);
       });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [child?.id, t]);
+    return () => { cancelled = true; };
+  }, [child?.id, childrenReady]); // t removed from deps
 
-  // Derive display values
   const hasData = data !== null && data.records.length > 0;
   const latestStatusLabel = hasData ? data!.latestStatusLabel : "NEUTRAL";
   const latestEmotionPolarity = hasData ? data!.latestEmotionPolarity : "NEUTRAL";
@@ -144,7 +141,6 @@ function WellbeingPage() {
         ? t("pw.risk.high")
         : t("pw.risk.medium");
 
-  // Chart data (needs at least 2 points)
   const chartData = useMemo(() => {
     if (!data || data.trend.length < 2) return [];
     return data.trend.map((p) => ({
@@ -154,7 +150,6 @@ function WellbeingPage() {
     }));
   }, [data]);
 
-  // Top-level indicator cards
   const indicatorCards = useMemo(
     () => [
       {
@@ -200,7 +195,7 @@ function WellbeingPage() {
               <h1 className="text-lg font-bold">
                 {child?.name ?? t("pw.selectChild")}
               </h1>
-              <p className="text-xs text-white/60">{child?.grade}</p>
+              <p className="text-xs text-white/60">{t("pw.childStatus")}</p>
             </div>
             <button
               onClick={() => navigate({ to: "/parent/children" })}
@@ -215,20 +210,15 @@ function WellbeingPage() {
       {/* Status indicator cards */}
       <div className="mt-4 grid grid-cols-3 gap-2.5">
         {indicatorCards.map(({ Icon, label, value, color }) => (
-          <div
-            key={label}
-            className="rounded-2xl border border-border/50 bg-card p-3.5 text-center shadow-sm"
-          >
+          <div key={label} className="rounded-2xl border border-border/50 bg-card p-3.5 text-center shadow-sm">
             <Icon className={`mx-auto h-5 w-5 ${color} opacity-60`} />
             <p className="mt-2 text-sm font-bold leading-tight">{value}</p>
-            <p className="mt-0.5 text-[10px] text-muted-foreground/50">
-              {label}
-            </p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground/50">{label}</p>
           </div>
         ))}
       </div>
 
-      {/* Loading state */}
+      {/* Loading */}
       {loading && (
         <div className="mt-6 flex flex-col items-center justify-center py-8">
           <RefreshCw className="h-6 w-6 animate-spin text-primary/40" />
@@ -236,7 +226,7 @@ function WellbeingPage() {
         </div>
       )}
 
-      {/* Error state */}
+      {/* Error */}
       {error && !loading && (
         <div className="mt-4 rounded-2xl border border-weak/20 bg-weak/5 p-4 text-center">
           <p className="text-sm text-weak">{error}</p>
@@ -257,32 +247,21 @@ function WellbeingPage() {
       {/* Data available */}
       {!loading && !error && hasData && (
         <div className="mt-4 space-y-4">
-          {/* Score + risk level */}
           <div className="grid grid-cols-2 gap-2.5">
             <StatCard
               label={t("pw.wellbeingScore")}
               value={data!.latestScore}
-              icon={
-                <StatusIcon
-                  label={latestStatusLabel}
-                  className="h-3.5 w-3.5"
-                />
-              }
+              icon={<StatusIcon label={latestStatusLabel} className="h-3.5 w-3.5" />}
               tint={statusColor(latestStatusLabel)}
             />
-            <div
-              className={`rounded-2xl border p-4 shadow-sm ${riskBg(latestRiskLevel)}`}
-            >
+            <div className={`rounded-2xl border p-4 shadow-sm ${riskBg(latestRiskLevel)}`}>
               <span className="text-[11px] opacity-70">{t("pw.risk")}</span>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-2xl font-bold tracking-tight">
-                  {riskText}
-                </span>
+                <span className="text-2xl font-bold tracking-tight">{riskText}</span>
               </div>
             </div>
           </div>
 
-          {/* Trend chart */}
           {chartData.length >= 2 && (
             <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
@@ -293,16 +272,12 @@ function WellbeingPage() {
             </div>
           )}
 
-          {/* Current signals */}
           {data!.latestSignals.length > 0 && (
             <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
               <h3 className="mb-3 text-sm font-bold">{t("pw.signals")}</h3>
               <div className="flex flex-wrap gap-2">
                 {data!.latestSignals.map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-full border border-border/40 bg-muted/30 px-3 py-1 text-xs text-foreground/70"
-                  >
+                  <span key={s} className="rounded-full border border-border/40 bg-muted/30 px-3 py-1 text-xs text-foreground/70">
                     {s}
                   </span>
                 ))}
@@ -310,17 +285,14 @@ function WellbeingPage() {
             </div>
           )}
 
-          {/* Last updated timestamp */}
           {data!.records[0] && (
             <p className="text-center text-[10px] text-muted-foreground/30">
-              {t("pw.lastUpdated")}:{" "}
-              {new Date(data!.records[0].createdAt).toLocaleString()}
+              {t("pw.lastUpdated")}: {new Date(data!.records[0].createdAt).toLocaleString()}
             </p>
           )}
         </div>
       )}
 
-      {/* Privacy notice */}
       <div className="mt-4">
         <PermissionNotice text={t("pw.permission")} />
       </div>

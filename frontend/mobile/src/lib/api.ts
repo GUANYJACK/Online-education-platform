@@ -226,8 +226,28 @@ export async function apiGetMentalHealthHistory(
   studentId: string,
   opts?: { limit?: number }
 ): Promise<MentalHealthHistory> {
-  const qs = opts?.limit ? `?limit=${opts.limit}` : '';
-  return request(`/ai/mental-health/${studentId}${qs}`);
+  const params = new URLSearchParams({ studentId, limit: String(opts?.limit ?? 100) });
+  const data = await request<{ history: MentalHealthRecord[] }>(`/ai/mental-health/history?${params}`);
+  const res = data.history;
+  // Wrap flat record array into MentalHealthHistory shape
+  const latest = res.length > 0 ? res[res.length - 1] : null;
+  return {
+    studentId,
+    latestScore: latest?.statusScore ?? 0,
+    latestStatusLabel: latest?.statusLabel ?? "NEUTRAL",
+    latestEmotionPolarity: latest?.emotionPolarity ?? "NEUTRAL",
+    latestRiskLevel: latest?.riskLevel ?? "LOW",
+    latestSignals: latest?.signals ?? [],
+    trend: res.map((r) => ({
+      date: r.createdAt,
+      statusScore: r.statusScore,
+      scoreDelta: r.scoreDelta,
+      statusLabel: r.statusLabel,
+      emotionPolarity: r.emotionPolarity,
+      riskLevel: r.riskLevel,
+    })),
+    records: res,
+  };
 }
 
 export interface SessionMentalHealthResult {

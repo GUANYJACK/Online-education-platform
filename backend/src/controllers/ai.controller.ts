@@ -140,8 +140,6 @@ export const chat = async (req: AuthRequest, res: Response): Promise<void> => {
       return;
     }
 
-    const effectiveSystemPrompt = session.systemPrompt ?? undefined;
-
     // Check if this is the first user message (for Socratic title generation)
     const isSocratic = session.sessionType === 'SOCRATIC';
     const priorUserCount = isSocratic
@@ -153,9 +151,10 @@ export const chat = async (req: AuthRequest, res: Response): Promise<void> => {
 
     // Generate response BEFORE saving the user message so that getConversationHistory
     // fetches only prior turns, preventing the current message from appearing twice.
+    // System prompt is read from the session directly inside each service function.
     let { response: aiResponse, model } = isSocratic
-      ? await generateSocraticResponse(message, session.id, effectiveSystemPrompt)
-      : await generateMentalHealthResponse(message, session.id, effectiveSystemPrompt);
+      ? await generateSocraticResponse(message, session.id)
+      : await generateMentalHealthResponse(message, session.id);
 
     console.warn('[CHAT] Generated response');
 
@@ -302,6 +301,49 @@ export const checkMentalHealth = async (req: AuthRequest, res: Response): Promis
   } catch (error: any) {
     console.error('[MENTAL HEALTH] Error:', error?.message, error?.stack);
     res.status(500).json({ error: 'Mental health check failed', details: error?.message });
+  }
+};
+
+export const getMentalHealthHistory = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const studentId = req.user?.id;
+    if (!studentId) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
+
+    const sessionId = req.query.sessionId as string | undefined;
+    const limit = Math.min(parseInt((req.query.limit as string) || '100', 10), 500);
+
+    const records = await prisma.mentalHealth.findMany({
+      where: {
+        studentId,
+        ...(sessionId ? { sourceSessionId: sessionId } : {})
+      },
+      orderBy: { createdAt: 'asc' },
+      take: limit,
+      select: {
+        id: true,
+        scoreDelta: true,
+        statusScore: true,
+        statusLabel: true,
+        riskLevel: true,
+        emotionPolarity: true,
+        signals: true,
+        createdAt: true,
+        sourceSessionId: true
+      }
+    });
+
+    const history = records.map(r => ({
+      ...r,
+      signals: r.signals ? r.signals.split(',').map((s: string) => s.trim()).filter(Boolean) : []
+    }));
+
+    res.json({ history });
+  } catch (error: any) {
+    console.error('[MENTAL HEALTH HISTORY] Error:', error?.message);
+    res.status(500).json({ error: 'Failed to fetch mental health history' });
   }
 };
 
